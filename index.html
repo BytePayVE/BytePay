@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BytePay - Sistema Financiero</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --primary: #0f172a;
+            --primary-hover: #1e293b;
+            --accent: #0284c7;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 12px;
+            --success: #16a34a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
+        
+        .bcv-ticker {
+            background: #0f172a; color: #f8fafc; font-size: 11px; padding: 6px 16px;
+            display: flex; justify-content: space-between; align-items: center; font-weight: 600;
+        }
+        header {
+            background: #ffffff; border-bottom: 1px solid var(--border); height: 60px;
+            display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+            position: sticky; top: 0; z-index: 1000;
+        }
+        .header-brand { display: flex; align-items: center; gap: 12px; }
+        .header-logo { width: 36px; height: 36px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 8px; display: flex; justify-content: center; align-items: center; color: #fff; font-weight: bold; }
+        
+        main { flex: 1; display: flex; justify-content: center; align-items: center; padding: 24px 16px; }
+        .app-container { width: 100%; max-width: 580px; background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border); padding: 28px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
+        
+        .view { display: none; flex-direction: column; }
+        .view.active { display: flex; }
+        
+        h1 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+        p.subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 18px; }
+        
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
+        input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; background: #fff; }
+        input:focus, select:focus { border-color: var(--primary); }
+        
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 6px; }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-secondary { background-color: #f1f5f9; color: var(--text-main); border: 1px solid var(--border); }
+        
+        .info-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+        .article-item { border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 8px; background: #fff; }
+    </style>
+</head>
+<body>
+
+    <div class="bcv-ticker">
+        <span>🇻🇪 Tasa Oficial BCV: <strong id="tasaBcvValor">Cargando...</strong> VES/USD</span>
+        <span id="bcvEstadoApi">Sincronizando BCV...</span>
+    </div>
+
+    <header>
+        <div class="header-brand">
+            <div class="header-logo">BP</div>
+            <span style="font-weight: 800; font-size: 16px;">BytePay Sistema Cloud</span>
+        </div>
+    </header>
+
+    <main>
+        <div class="app-container">
+
+            <!-- VISTA INICIO -->
+            <div id="view-home" class="view active">
+                <h1>Consulta de Contratos</h1>
+                <p class="subtitle">Ingrese su número de contrato para verificar sus artículos y cuotas al cambio del día.</p>
+
+                <div class="form-group">
+                    <label>Número de Contrato</label>
+                    <input type="text" id="inputContrato" placeholder="Ej. C1">
+                </div>
+                <button class="btn btn-primary" onclick="consultarContratoCloud()">Consultar Cuenta</button>
+                
+                <div style="width:100%; height:1px; background:var(--border); margin:16px 0;"></div>
+                
+                <div class="form-group">
+                    <label>Contraseña de Administrador</label>
+                    <input type="password" id="inputAdminPass" placeholder="••••••••">
+                </div>
+                <button class="btn btn-secondary" onclick="loginAdmin()">Panel de Administración</button>
+            </div>
+
+            <!-- VISTA DASHBOARD CLIENTE -->
+            <div id="view-cliente-dashboard" class="view">
+                <h1>Estado de Cuenta</h1>
+                <p class="subtitle" id="lblSubCliente">Contrato activo</p>
+
+                <div id="listaArticulosCliente"></div>
+
+                <div class="info-card" style="background: #f0fdf4; border-color: #bbf7d0; color: #166534;">
+                    🧮 Equivalente total al cambio BCV actual: <strong id="lblTotalBolivares">0.00 VES</strong>
+                </div>
+
+                <button class="btn btn-secondary" onclick="cambiarVista('view-home')">Volver</button>
+            </div>
+
+            <!-- VISTA PANEL ADMIN -->
+            <div id="view-admin" class="view">
+                <h1>Panel Administrativo</h1>
+                <p class="subtitle">Registro y cálculo automático de inicial y cuotas.</p>
+
+                <div class="form-group"><label>Nro. de Contrato Destino</label><input type="text" id="admContrato" placeholder="C1"></div>
+                <div class="form-group"><label>Nombre del Titular</label><input type="text" id="admTitular" placeholder="Nombre del Cliente"></div>
+                <div class="form-group"><label>Nombre del Artículo</label><input type="text" id="admArticulo" placeholder="Ej. Nevera ejecutiva"></div>
+                
+                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <div style="flex:1;"><label>Costo Total ($)</label><input type="number" id="admCosto" placeholder="300" oninput="calcularAdmin()"></div>
+                    <div style="flex:1;">
+                        <label>% Inicial</label>
+                        <select id="admPorcentaje" onchange="calcularAdmin()">
+                            <option value="30">30% Inicial</option>
+                            <option value="40" selected>40% Inicial</option>
+                            <option value="50">50% Inicial</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <div style="flex:1;"><label>Inicial Calculada ($)</label><input type="text" id="admResInicial" readonly style="background:#f1f5f9; font-weight:bold;"></div>
+                    <div style="flex:1;"><label>Nro. de Cuotas</label><input type="number" id="admCuotas" value="4" oninput="calcularAdmin()"></div>
+                </div>
+
+                <div class="info-card" style="background: #eff6ff; border-color: #bfdbfe; color: #1e40af;">
+                    💡 <b>Cuota Mensual Automática:</b> <span id="admResCuota" style="font-weight:bold;">$0.00</span>
+                </div>
+
+                <button class="btn btn-primary" onclick="guardarEnFirebase()">Guardar en la Base de Datos</button>
+                <button class="btn btn-secondary" onclick="cambiarVista('view-home')">Cerrar Sesión</button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Conexión de Firebase con tu configuración actualizada -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBboWF2cTQdWgjaSxqQb3BMPJCKFs0ftEM",
+            authDomain: "jotech-contratos.firebaseapp.com",
+            projectId: "jotech-contratos",
+            storageBucket: "jotech-contratos.firebasestorage.app",
+            messagingSenderId: "109219790720",
+            appId: "1:109219790720:web:b9d410cc0725e3eebf0b65"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.tasaBcvGlobal = 36.50;
+
+        async function obtenerTasaBcv() {
+            try {
+                const res = await fetch('https://pydolarve.org/api/v1/dollar?page=bcv');
+                const data = await res.json();
+                if (data && data.monitors && data.monitors.bcv) {
+                    window.tasaBcvGlobal = parseFloat(data.monitors.bcv.price);
+                    document.getElementById('tasaBcvValor').innerText = window.tasaBcvGlobal.toFixed(2);
+                    document.getElementById('bcvEstadoApi').innerText = "✓ BCV en vivo";
+                }
+            } catch (e) {
+                document.getElementById('tasaBcvValor').innerText = window.tasaBcvGlobal.toFixed(2);
+                document.getElementById('bcvEstadoApi').innerText = "⚡ Modo Respaldo";
+            }
+        }
+        obtenerTasaBcv();
+
+        window.guardarEnFirebase = async function() {
+            const contratoId = document.getElementById('admContrato').value.trim();
+            const titular = document.getElementById('admTitular').value.trim();
+            const articulo = document.getElementById('admArticulo').value.trim();
+            const costoTotal = parseFloat(document.getElementById('admCosto').value) || 0;
+            const porcentaje = parseInt(document.getElementById('admPorcentaje').value);
+            const numCuotas = parseInt(document.getElementById('admCuotas').value);
+
+            if (!contratoId || !articulo || costoTotal <= 0) {
+                alert("Complete los campos obligatorios.");
+                return;
+            }
+
+            const inicialCalculada = (costoTotal * porcentaje) / 100;
+            const cuotaMensual = (costoTotal - inicialCalculada) / numCuotas;
+
+            try {
+                await setDoc(doc(db, "clientes", contratoId), {
+                    numeroContrato: contratoId,
+                    nombreTitular: titular,
+                    actualizado: new Date().toISOString()
+                }, { merge: true });
+
+                const articuloRef = doc(collection(db, "articulos"));
+                await setDoc(articuloRef, {
+                    contratoId: contratoId,
+                    nombreArticulo: articulo,
+                    costoTotal: costoTotal,
+                    porcentajeInicial: porcentaje,
+                    inicialCalculada: inicialCalculada,
+                    totalCuotas: numCuotas,
+                    cuotaValor: cuotaMensual,
+                    estado: "Activo",
+                    creadoEn: new Date().toISOString()
+                });
+
+                alert("¡Datos guardados con éxito en Firestore!");
+            } catch (error) {
+                alert("Error al guardar: " + error.message);
+            }
+        };
+
+        window.consultarContratoCloud = async function() {
+            const contratoId = document.getElementById('inputContrato').value.trim();
+            if (!contratoId) { alert("Ingrese un número de contrato."); return; }
+
+            try {
+                const clienteDoc = await getDoc(doc(db, "clientes", contratoId));
+                if (!clienteDoc.exists()) {
+                    alert("No se encontró el contrato en la base de datos.");
+                    return;
+                }
+
+                const clienteData = clienteDoc.data();
+                document.getElementById('lblSubCliente').innerText = `Titular: ${clienteData.nombreTitular} (Contrato #${contratoId})`;
+
+                const q = query(collection(db, "articulos"), where("contratoId", "==", contratoId));
+                const querySnapshot = await getDocs(q);
+
+                const contenedor = document.getElementById('listaArticulosCliente');
+                contenedor.innerHTML = '';
+                let sumaTotalBs = 0;
+
+                querySnapshot.forEach((docSnap) => {
+                    const art = docSnap.data();
+                    const eqBs = art.cuotaValor * window.tasaBcvGlobal;
+                    sumaTotalBs += eqBs;
+
+                    contenedor.innerHTML += `
+                        <div class="article-item">
+                            <h3 style="font-size:15px; color:var(--primary);">${art.nombreArticulo}</h3>
+                            <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">
+                                Costo Total: <b>$${art.costoTotal}</b> | Inicial (${art.porcentajeInicial}%): <b style="color:var(--success)">$${art.inicialCalculada}</b><br>
+                                Cuota Mensual: <b>$${art.cuotaValor.toFixed(2)}</b> (${eqBs.toFixed(2)} VES hoy)
+                            </p>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('lblTotalBolivares').innerText = `${sumaTotalBs.toLocaleString('es-VE', {minimumFractionDigits: 2})} VES`;
+                cambiarVista('view-cliente-dashboard');
+
+            } catch (error) {
+                alert("Error al consultar: " + error.message);
+            }
+        };
+    </script>
+
+    <script>
+        function cambiarVista(idVista) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(idVista).classList.add('active');
+        }
+
+        function calcularAdmin() {
+            const costo = parseFloat(document.getElementById('admCosto').value) || 0;
+            const porcentaje = parseInt(document.getElementById('admPorcentaje').value) || 40;
+            const cuotas = parseInt(document.getElementById('admCuotas').value) || 4;
+
+            const inicial = (costo * porcentaje) / 100;
+            const restante = costo - inicial;
+            const cuotaValor = cuotas > 0 ? (restante / cuotas) : 0;
+
+            document.getElementById('admResInicial').value = `$${inicial.toFixed(2)}`;
+            document.getElementById('admResCuota').innerText = `$${cuotaValor.toFixed(2)} USD (aprox. ${(cuotaValor * window.tasaBcvGlobal).toFixed(2)} VES)`;
+        }
+
+        function loginAdmin() {
+            const pass = document.getElementById('inputAdminPass').value;
+            if (pass === "admin123") {
+                document.getElementById('inputAdminPass').value = '';
+                cambiarVista('view-admin');
+                calcularAdmin();
+            } else {
+                alert("Contraseña incorrecta.");
+            }
+        }
+    </script>
+</body>
+</html>
+
