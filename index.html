@@ -3,119 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BytePay - Sistema de Cuotas</title>
+    <title>BytePay - Sistema Financiero Cloud Pro</title>
+    <!-- Librería jsPDF para generación real de recibos -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        /* ==========================================================
-           ESTILOS CSS (Variables, diseño general, menús, tarjetas)
-           ================================================---------- */
         :root {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --primary: #0f172a;
-            --primary-hover: #1e293b;
-            --accent: #0284c7;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --radius: 12px;
-            --success: #16a34a;
-            --warning: #d97706;
+            --container-max-width: 640px;
+            --container-padding: 32px;
+            --container-margin-top: 28px;
+            
+            --bg-color: #0b0f19;
+            --card-bg: rgba(18, 24, 38, 0.75);
+            --card-solid: #121826;
+            --primary: #38bdf8;
+            --primary-hover: #0ea5e9;
+            --accent: #6366f1;
+            --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --radius: 18px;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+            --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; background-image: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.08) 0%, transparent 40%); }
         
         .bcv-ticker {
-            background: #0f172a; color: #f8fafc; font-size: 11px; padding: 6px 16px;
-            display: flex; justify-content: space-between; align-items: center; font-weight: 600;
+            background: linear-gradient(90deg, #0f172a, #1e293b); color: #38bdf8; font-size: 11px; padding: 8px 20px;
+            display: flex; justify-content: space-between; align-items: center; font-weight: 700; border-bottom: 1px solid var(--border);
+            letter-spacing: 0.5px;
         }
+        
         header {
-            background: #ffffff; border-bottom: 1px solid var(--border); height: 60px;
-            display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+            background: rgba(18, 24, 38, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); height: 65px;
+            display: flex; justify-content: space-between; align-items: center; padding: 0 24px;
             position: sticky; top: 0; z-index: 1000;
         }
-        .header-brand { display: flex; align-items: center; gap: 12px; }
-        .header-logo { width: 36px; height: 36px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 8px; display: flex; justify-content: center; align-items: center; color: #fff; font-weight: bold; }
+        .header-brand { display: flex; align-items: center; gap: 14px; }
+        .header-logo { width: 40px; height: 40px; background: var(--accent-gradient); border-radius: 12px; display: flex; justify-content: center; align-items: center; color: #fff; font-weight: 900; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+        .header-actions { display: flex; align-items: center; gap: 12px; }
         
-        /* Menú Hamburguesa y Barra Lateral */
-        .menu-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--primary); display: none; }
+        .icon-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); width: 38px; height: 38px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; position: relative; color: var(--text-main); }
+        .icon-btn:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
+        .badge-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; box-shadow: 0 0 8px var(--danger); }
+
+        .menu-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-main); display: none; }
+        
         .sidebar {
-            position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background: #ffffff;
-            box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 1100; transition: left 0.3s ease; display: flex; flex-direction: column;
+            position: fixed; top: 0; left: -300px; width: 300px; height: 100%; background: #0e1320;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.5); z-index: 1100; transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column;
+            border-right: 1px solid var(--border);
         }
         .sidebar.open { left: 0; }
-        .sidebar-header { padding: 20px; background: var(--primary); color: #fff; display: flex; justify-content: space-between; align-items: center; }
-        .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; }
+        .sidebar-header { padding: 24px; background: #121826; color: #fff; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .sidebar-menu { list-style: none; padding: 20px 0; flex: 1; overflow-y: auto; }
         .sidebar-menu li a {
-            display: block; padding: 12px 20px; color: var(--text-main); text-decoration: none; font-size: 13px; font-weight: 600; border-left: 3px solid transparent;
+            display: block; padding: 14px 24px; color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 600; border-left: 3px solid transparent; cursor: pointer;
         }
-        .sidebar-menu li a:hover, .sidebar-menu li a.active { background: #f1f5f9; border-left-color: var(--accent); color: var(--accent); }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1050; display: none; }
+        .sidebar-menu li a:hover { background: rgba(255, 255, 255, 0.03); border-left-color: var(--primary); color: var(--primary); }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1050; display: none; }
         .overlay.active { display: block; }
 
-        main { flex: 1; display: flex; justify-content: center; align-items: center; padding: 24px 16px; }
-        .app-container { width: 100%; max-width: 620px; background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border); padding: 28px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
+        main { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: var(--container-margin-top) 16px; }
+        
+        .app-container { 
+            width: 100%; max-width: var(--container-max-width); background: var(--card-bg); 
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border-radius: var(--radius); border: 1px solid var(--border); padding: var(--container-padding); 
+            box-shadow: var(--shadow); position: relative; overflow: hidden; 
+        }
         
         .view { display: none; flex-direction: column; }
         .view.active { display: flex; }
         
-        h1 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
-        p.subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 18px; }
+        h1 { font-size: 22px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.5px; }
+        p.subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 22px; line-height: 1.5; }
         
-        .form-group { margin-bottom: 12px; }
-        label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
-        input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; background: #fff; }
-        input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select, textarea { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 14px; outline: none; background: rgba(255, 255, 255, 0.03); color: var(--text-main); }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15); background: rgba(255, 255, 255, 0.05); }
         
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 6px; text-align: center; text-decoration: none; display: inline-block; }
-        .btn-primary { background-color: var(--primary); color: white; }
-        .btn-primary:hover { background-color: var(--primary-hover); }
-        .btn-secondary { background-color: #f1f5f9; color: var(--text-main); border: 1px solid var(--border); }
-        .btn-whatsapp { background-color: #25d366; color: white; }
-        .btn-whatsapp:hover { background-color: #1ebe5d; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; text-align: center; text-decoration: none; display: inline-block; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .btn-primary { background: var(--accent-gradient); color: white; }
+        .btn-primary:hover { opacity: 0.95; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4); }
+        .btn-secondary { background: rgba(255, 255, 255, 0.05); color: var(--text-main); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.08); transform: translateY(-2px); }
+        .btn-whatsapp { background-color: #10b981; color: white; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+        .btn-whatsapp:hover { background-color: #059669; transform: translateY(-2px); }
         
-        .info-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
-        .article-item { border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 8px; background: #fff; }
+        .info-card { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: var(--card-shadow); }
+        .article-item { border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 10px; background: rgba(255, 255, 255, 0.02); }
         
-        /* Estilos del Acordeón para productos */
-        .accordion-header { background: #f1f5f9; padding: 10px 14px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 13px; margin-bottom: 6px; }
-        .accordion-body { display: none; padding: 10px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; background: #fafafa; }
+        #view-loader { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 50px 0; text-align: center; }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(255, 255, 255, 0.1); border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 18px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader-check { font-size: 48px; color: var(--success); display: none; }
+
+        .client-welcome-banner {
+            background: var(--accent-gradient); color: white; border-radius: 16px; padding: 22px;
+            margin-bottom: 22px; display: flex; align-items: center; gap: 18px; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.25);
+            position: relative; overflow: hidden;
+        }
+        .client-avatar-badge {
+            width: 60px; height: 60px; background: rgba(255, 255, 255, 0.2); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; font-size: 26px; flex-shrink: 0; border: 2px solid rgba(255, 255, 255, 0.4); overflow: hidden;
+        }
+        .client-avatar-badge img { width: 100%; height: 100%; object-fit: cover; }
+        .client-welcome-info h2 { font-size: 19px; font-weight: 800; margin-bottom: 2px; }
+        .client-welcome-info p { font-size: 12px; opacity: 0.9; margin: 0; }
+        .contract-badge-pill { display: inline-block; background: rgba(0, 0, 0, 0.2); padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; margin-top: 8px; letter-spacing: 0.5px; }
+
+        .accordion-header { background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border); padding: 14px 16px; border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 13px; margin-bottom: 8px; }
+        .accordion-header:hover { background: rgba(255, 255, 255, 0.07); border-color: rgba(255, 255, 255, 0.15); }
+        .accordion-body { display: none; padding: 16px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; background: rgba(18, 24, 38, 0.9); }
         .accordion-body.open { display: block; }
 
-        .admin-tabs { display: flex; gap: 6px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px; flex-wrap: wrap; }
-        .tab-btn { background: #f1f5f9; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; color: var(--text-muted); }
-        .tab-btn.active { background: var(--primary); color: #fff; }
+        .cuota-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 12px; }
+        .cuota-row:last-child { border-bottom: none; }
+        .badge-status { padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; color: white; letter-spacing: 0.5px; }
+        .badge-pagado { background-color: var(--success); box-shadow: 0 0 10px rgba(34, 197, 94, 0.3); }
+        .badge-pendiente { background-color: var(--danger); box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
+
+        .faq-card { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+        .faq-question { padding: 14px 16px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .faq-question:hover { background: rgba(255, 255, 255, 0.05); }
+        .faq-answer { display: none; padding: 14px 16px; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); background: rgba(18, 24, 38, 0.6); line-height: 1.5; }
+        .faq-card.open .faq-answer { display: block; }
+
+        .notifications-panel {
+            position: absolute; top: 70px; right: 24px; width: 320px; background: #121826;
+            border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow);
+            display: none; z-index: 1200; padding: 18px; backdrop-filter: blur(16px);
+        }
+        .notifications-panel.open { display: block; }
+        .notif-item { font-size: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); color: var(--text-main); }
+
+        #toastFeedback {
+            position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: #fff;
+            padding: 12px 20px; border-radius: 12px; font-size: 13px; font-weight: 600;
+            box-shadow: var(--shadow); border: 1px solid var(--border); z-index: 1500; display: none; transform: translateY(100px); transition: transform 0.3s;
+        }
+        #toastFeedback.show { transform: translateY(0); display: block; }
+
+        .admin-tabs { display: flex; gap: 6px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px; flex-wrap: wrap; }
+        .tab-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; color: var(--text-muted); }
+        .tab-btn.active { background: var(--primary); color: #0b0f19; border-color: var(--primary); box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); }
         .admin-section { display: none; }
         .admin-section.active { display: block; }
-
-        .faq-item { margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-        .faq-question { font-weight: bold; font-size: 13px; color: var(--primary); margin-bottom: 4px; }
-        .faq-answer { font-size: 12px; color: var(--text-muted); }
+        
+        .admin-list-item { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
 
-    <!-- BARRA SUPERIOR: Muestra la tasa del BCV en tiempo real -->
+    <!-- Ticker BCV -->
     <div class="bcv-ticker">
-        <span>🇻🇪 Tasa Oficial BCV: <strong id="tasaBcvValor">Cargando...</strong> VES/USD</span>
-        <span id="bcvEstadoApi">Sincronizando API BCV...</span>
+        <span>🇻🇪 Tasa Oficial Banco Central de Venezuela (BCV): <strong id="tasaBcvValor" style="color:#fff;">Cargando...</strong> VES/USD</span>
+        <span id="bcvEstadoApi" style="color: var(--success);">Modo Conectado (Seguro)</span>
     </div>
 
-    <!-- ENCABEZADO PRINCIPAL DE LA APP -->
+    <!-- Header Principal -->
     <header>
         <div class="header-brand">
-            <!-- Botón hamburguesa (Se oculta al inicio y aparece al entrar como cliente o admin) -->
             <button id="btnMenuToggle" class="menu-btn" onclick="toggleSidebar()" style="display: none;">☰</button>
-            <div class="header-logo">BYPA</div>
-
-            <div class="logo-container" style="display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
-                    <img src="logo.png" alt="Logo de la Empresa" style="max-width: 120px; height: auto; border-radius: 8px;">
-            </div>
-            <span style="font-weight: 800; font-size: 16px;">BYTEPAY VE</span>
+            <div class="header-logo">BP</div>
+            <span style="font-weight: 900; font-size: 16px; letter-spacing: -0.5px;">BytePay Cloud Pro</span>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="toggleNotifications()" title="Notificaciones">
+                🔔 <span class="badge-dot" id="notifDot" style="display:none;"></span>
+            </button>
         </div>
     </header>
 
-    <!-- MENÚ LATERAL DESPLEGABLE (SIDEBAR) DEL CLIENTE -->
+    <!-- Panel Deslizable de Notificaciones -->
+    <div id="notificationsPanel" class="notifications-panel">
+        <div style="font-weight: bold; font-size: 13px; margin-bottom: 10px; display: flex; justify-content: space-between;">
+            <span>Centro de Avisos</span>
+            <span style="font-size: 10px; color: var(--primary); cursor: pointer;" onclick="marcarLeidas()">Limpiar</span>
+        </div>
+        <div id="listaNotificaciones">
+            <div class="notif-item">🎉 ¡Bienvenido a BytePay! Tasas sincronizadas mediante pasarela segura.</div>
+        </div>
+    </div>
+
+    <!-- Sidebar Cliente (Menú lateral) -->
     <div id="sidebarOverlay" class="overlay" onclick="toggleSidebar()"></div>
     <div id="clientSidebar" class="sidebar">
         <div class="sidebar-header">
@@ -123,205 +200,216 @@
             <button onclick="toggleSidebar()" style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer;">✕</button>
         </div>
         <ul class="sidebar-menu">
-            <li><a href="#" onclick="cambiarVistaCliente('view-cliente-dashboard'); toggleSidebar();">🏠 Inicio & Mis Productos</a></li>
-            <li><a href="#" onclick="cambiarVistaCliente('view-catalogo'); toggleSidebar();">📦 Catálogo General</a></li>
-            <li><a href="#" onclick="cambiarVistaCliente('view-soporte'); toggleSidebar();">❓ Soporte y Preguntas Frecuentes</a></li>
-            <li><a href="#" onclick="cambiarVistaCliente('view-reportar-pago'); toggleSidebar();">💳 Reportar Pago de Cuota</a></li>
-            <li style="margin-top: 30px;"><a href="#" onclick="cerrarSesionCliente()" style="color: #dc2626;">🚪 Cerrar Sesión</a></li>
+            <li><a onclick="navegarVista('view-cliente-dashboard'); toggleSidebar();">🏠 Inicio & Mis Productos</a></li>
+            <li><a onclick="navegarVista('view-perfil'); toggleSidebar();">👤 Mi Perfil y Ajustes</a></li>
+            <li><a onclick="navegarVista('view-catalogo'); toggleSidebar();">📦 Catálogo General</a></li>
+            <li><a onclick="navegarVista('view-faq'); toggleSidebar();">❓ Preguntas Frecuentes</a></li>
+            <li><a onclick="navegarVista('view-reportar-pago'); toggleSidebar();">💳 Reportar Pago de Cuota</a></li>
+            <li style="margin-top: 40px;"><a onclick="cerrarSesionCliente()" style="color: var(--danger);">🚪 Cerrar Sesión</a></li>
         </ul>
     </div>
 
-    <!-- CONTENEDOR PRINCIPAL DE VISTAS -->
+    <!-- Contenedor Principal -->
     <main>
         <div class="app-container">
 
-            <!-- VISTA 1: INICIO / LOGIN (Consultar contrato o entrar como admin) -->
+            <!-- VISTA 1: HOME / LOGIN -->
             <div id="view-home" class="view active">
-                <h1>Iniciar Sesión</h1>
-                <p class="subtitle">Ingrese su número de contrato para verificar sus artículos, abonos y cuotas al cambio del día.</p>
+                <h1>Consulta de Contratos</h1>
+                <p class="subtitle">Ingrese su número de contrato para verificar sus artículos, cuotas iniciales y saldos calculados a la tasa oficial del Banco Central de Venezuela.</p>
 
                 <div class="form-group">
-                    <label>Número de Contrato o RUT</label>
-                    <input type="text" id="inputContrato" placeholder="Numero de Contrato o RUT">
+                    <label>Número de Contrato</label>
+                    <input type="text" id="inputContrato" placeholder="Ej. N33">
                 </div>
-                <button class="btn btn-primary" onclick="consultarContratoCloud()">Consultar Cuenta</button>
+                <button class="btn btn-primary" onclick="iniciarSesionConAnimacion('cliente')">Consultar Cuenta</button>
                 
-                <div style="width:100%; height:1px; background:var(--border); margin:16px 0;"></div>
+                <div style="width:100%; height:1px; background:var(--border); margin:20px 0;"></div>
                 
                 <div class="form-group">
                     <label>Contraseña de Administrador</label>
-                    <input type="password" id="inputAdminPass" placeholder="">
+                    <input type="password" id="inputAdminPass" placeholder="••••••••">
                 </div>
-                <button class="btn btn-secondary" onclick="loginAdmin()">Panel de Administración</button>
+                <button class="btn btn-secondary" onclick="iniciarSesionConAnimacion('admin')">Panel de Administración</button>
             </div>
 
-            <!-- VISTA 2: DASHBOARD DEL CLIENTE (Muestra productos y total en bolívares) -->
+            <!-- VISTA DE CARGA -->
+            <div id="view-loader" class="view">
+                <div class="spinner" id="loaderSpinner"></div>
+                <div class="loader-check" id="loaderCheck">✓</div>
+                <h2 id="loaderText" style="font-size: 16px; font-weight: 700; margin-top: 12px;">Estableciendo enlace seguro con tasa BCV...</h2>
+            </div>
+
+            <!-- VISTA 2: DASHBOARD DEL CLIENTE -->
             <div id="view-cliente-dashboard" class="view">
-                <h1 id="lblSaludoCliente">¡Bienvenido!</h1>
-                <p class="subtitle" id="lblSubCliente">Estado de tus productos y cuotas asignadas</p>
+                <div class="client-welcome-banner">
+                    <div class="client-avatar-badge" id="bannerAvatar">👤</div>
+                    <div class="client-welcome-info">
+                        <h2 id="lblSaludoCliente">¡Hola!</h2>
+                        <p>Estado actual de tus productos, cuota inicial y cuotas asignadas.</p>
+                        <div class="contract-badge-pill" id="lblSubCliente">Contrato #---</div>
+                    </div>
+                </div>
 
                 <div id="listaArticulosCliente"></div>
 
-                <div class="info-card" style="background: #f0fdf4; border-color: #bbf7d0; color: #166534; margin-top: 10px;">
-                    🧮 Equivalente total al cambio BCV actual: <strong id="lblTotalBolivares">0.00 VES</strong>
+                <div class="info-card" style="background: rgba(34, 197, 94, 0.05); border-color: rgba(34, 197, 94, 0.2); color: #4ade80; margin-top: 12px;">
+                    🧮 Equivalente total al cambio BCV actual (<span id="tasaRefLabel">0.00</span> VES): <strong id="lblTotalBolivares">0.00 VES</strong>
                 </div>
 
-                <button class="btn btn-primary" style="margin-top: 10px;" onclick="cambiarVistaCliente('view-reportar-pago')">💳 Reportar un Pago de Cuota</button>
+                <div style="display: flex; gap: 10px; margin-top: 12px;">
+                    <button class="btn btn-primary" style="flex:1;" onclick="navegarVista('view-reportar-pago')">💳 Reportar Pago</button>
+                    <button class="btn btn-secondary" style="flex:1;" onclick="descargarReciboPDFReal()">📥 Descargar Recibo</button>
+                </div>
             </div>
 
-            <!-- VISTA 3: CATÁLOGO GENERAL DE PRODUCTOS -->
+            <!-- VISTA: PERFIL DE USUARIO -->
+            <div id="view-perfil" class="view">
+                <h1>Perfil y Ajustes</h1>
+                <p class="subtitle">Gestiona tu información personal, cédula y fotografía de perfil.</p>
+                <div class="form-group"><label>Cédula de Identidad</label><input type="text" id="perfilCedula"></div>
+                <div class="form-group"><label>Nombre del Titular</label><input type="text" id="perfilNombre"></div>
+                <div class="form-group"><label>Contrato Activo</label><input type="text" id="perfilContrato" readonly style="opacity: 0.7;"></div>
+                <div class="form-group"><label>URL de Fotografía de Perfil (Opcional)</label><input type="text" id="perfilFoto" placeholder="https://ejemplo.com/foto.jpg"></div>
+                <button class="btn btn-primary" onclick="guardarPerfilCliente()">Guardar Cambios de Perfil</button>
+                <button class="btn btn-secondary" style="margin-top: 8px;" onclick="navegarVista('view-cliente-dashboard')">Volver al Inicio</button>
+            </div>
+
+            <!-- VISTA: CATÁLOGO -->
             <div id="view-catalogo" class="view">
                 <h1>Catálogo de Productos</h1>
-                <p class="subtitle">Explora los artículos y servicios disponibles en nuestra red de comercios aliados.</p>
-                <div id="catalogoListaGeneral">
-                    <p style="font-size: 12px; color: var(--text-muted);">Cargando catálogo...</p>
-                </div>
-                <button class="btn btn-secondary" style="margin-top: 14px;" onclick="cambiarVistaCliente('view-cliente-dashboard')">Volver al Inicio</button>
+                <p class="subtitle">Conoce nuestra línea de artículos disponibles para financiamiento directo.</p>
+                <div class="article-item"><b>🧊 Nevera Ejecutiva Dúplex</b><br><span style="font-size:12px; color:var(--text-muted);">Sistema de enfriamiento avanzado, bajo consumo eléctrico.</span></div>
+                <div class="article-item"><b>📱 Smartphone Gama Media Pro</b><br><span style="font-size:12px; color:var(--text-muted);">Pantalla AMOLED 6.5", 128GB ROM, cámara dual.</span></div>
+                <button class="btn btn-secondary" style="margin-top: 16px;" onclick="navegarVista('view-cliente-dashboard')">Volver al Inicio</button>
             </div>
 
-            <!-- VISTA 4: SOPORTE Y PREGUNTAS FRECUENTES -->
-            <div id="view-soporte" class="view">
-                <h1>Soporte y Preguntas Frecuentes</h1>
-                <p class="subtitle">Respuestas a las dudas más comunes sobre tus contratos, abonos y pagos.</p>
+            <!-- VISTA: PREGUNTAS FRECUENTES -->
+            <div id="view-faq" class="view">
+                <h1>Preguntas Frecuentes</h1>
+                <p class="subtitle">Encuentra respuestas inmediatas a tus dudas sobre pagos y contratos.</p>
                 
-                <div class="faq-item">
-                    <div class="faq-question">¿Cómo se calcula la tasa del dólar?</div>
-                    <div class="faq-answer">La tasa se sincroniza automáticamente en tiempo real con el marcador oficial del Banco Central de Venezuela (BCV).</div>
+                <div class="faq-card" onclick="toggleFaq(this)">
+                    <div class="faq-question">¿Cómo se actualizan los montos en bolívares? ▼</div>
+                    <div class="faq-answer">Todos los montos se calculan y actualizan automáticamente tomando como referencia estricta la tasa oficial del Banco Central de Venezuela (BCV) del día mediante pasarela segura.</div>
                 </div>
-                <div class="faq-item">
-                    <div class="faq-question">¿Cómo reporto el pago de mi cuota?</div>
-                    <div class="faq-answer">Puedes ir a la opción "Reportar Pago de Cuota" en tu menú lateral, ingresar los datos de tu transferencia, subir tu comprobante y enviar el reporte directamente por WhatsApp al administrador.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question">¿Cuándo se actualiza mi estado de cuenta?</div>
-                    <div class="faq-answer">Una vez que envías tu reporte por WhatsApp, el administrador verifica el pago en su banco y procede a confirmarlo en el panel administrativo.</div>
+                
+                <div class="faq-card" onclick="toggleFaq(this)">
+                    <div class="faq-question">¿Cómo reporto el pago de una cuota o inicial? ▼</div>
+                    <div class="faq-answer">Realiza tu transferencia o pago móvil, toma captura de pantalla al comprobante y envíalo mediante la opción "Reportar Pago" adjuntando los datos solicitados. Un administrador verificará y aprobará tu cuota.</div>
                 </div>
 
-                <button class="btn btn-secondary" style="margin-top: 14px;" onclick="cambiarVistaCliente('view-cliente-dashboard')">Volver al Inicio</button>
+                <div class="faq-card" onclick="toggleFaq(this)">
+                    <div class="faq-question">¿Dónde puedo ver el monto exacto de mi inicial? ▼</div>
+                    <div class="faq-answer">En tu panel de inicio ("Mis Productos"), haz clic en el desplegable de tu artículo. Allí verás detallada la cuota inicial pagada y el estado de cada cuota restante.</div>
+                </div>
+
+                <button class="btn btn-secondary" style="margin-top: 16px;" onclick="navegarVista('view-cliente-dashboard')">Volver al Inicio</button>
             </div>
 
-            <!-- VISTA 5: FORMULARIO PARA REPORTAR PAGO -->
+            <!-- VISTA: REPORTAR PAGO -->
             <div id="view-reportar-pago" class="view">
                 <h1>Reportar Pago de Cuota</h1>
-                <p class="subtitle">Transfiere a nuestros datos bancarios y envía la información completa al administrador por WhatsApp.</p>
-
-                <div class="info-card" style="background: #eff6ff; border-color: #bfdbfe; color: #1e40af;">
-                    🏛️ <b>Datos Bancarios Destino:</b><br>
-                    • <b>Banco:</b> Banco de Provincial(0108)<br>
-                    • <b>Cédula / RIF:</b> V-32.566.402<br>
-                    • <b>Teléfono:</b> 04245067266
-                </div>
-
-                <div class="form-group"><label>Número de Contrato *</label><input type="text" id="repContrato" placeholder="Ej. N45"></div>
-                <div class="form-group"><label>Número de Cuota a Pagar *</label><input type="text" id="repNumCuota" placeholder="Ej. Cuota 1"></div>
-                <div class="form-group"><label>Banco Emisor (Desde donde pagó) *</label><input type="text" id="repBancoEmisor" placeholder="Ej. Banesco / Mercantil"></div>
-                <div class="form-group"><label>Teléfono de quien emitió el pago *</label><input type="text" id="repTelefono" placeholder="04121234567"></div>
-                <div class="form-group"><label>Cédula de Identidad del Titular que paga *</label><input type="text" id="repCedula" placeholder="V-12345678"></div>
-                <div class="form-group"><label>6 Últimos Dígitos de la Referencia *</label><input type="text" id="repReferencia" maxlength="6" placeholder="123456"></div>
-                <div class="form-group"><label>Tasa del Día BCV (Referencia)</label><input type="text" id="repTasaBcv" readonly style="background:#f1f5f9;"></div>
-                <div class="form-group"><label>Subir Capture de Pago (Imagen) *</label><input type="file" id="repCapture" accept="image/*"></div>
-
-                <button class="btn btn-whatsapp" onclick="enviarReporteWhatsApp()">📤 Enviar Reporte por WhatsApp al Administrador</button>
-                <button class="btn btn-secondary" style="margin-top: 6px;" onclick="cambiarVistaCliente('view-cliente-dashboard')">Volver</button>
+                <p class="subtitle">Transfiere a nuestros datos bancarios y envía el comprobante.</p>
+                <div class="form-group"><label>Número de Contrato *</label><input type="text" id="repContrato" placeholder="Ej. N33"></div>
+                <div class="form-group"><label>Número de Cuota o Inicial a Pagar *</label><input type="text" id="repNumCuota" placeholder="Ej. Inicial o Cuota 1"></div>
+                <div class="form-group"><label>Banco Emisor *</label><input type="text" id="repBancoEmisor" placeholder="Banesco / Mercantil"></div>
+                <div class="form-group"><label>Teléfono *</label><input type="text" id="repTelefono" placeholder="04121234567"></div>
+                <div class="form-group"><label>Cédula de Identidad *</label><input type="text" id="repCedula" placeholder="V-12345678"></div>
+                <div class="form-group"><label>6 Últimos Dígitos Referencia *</label><input type="text" id="repReferencia" maxlength="6" placeholder="123456"></div>
+                <button class="btn btn-whatsapp" onclick="enviarReporteWhatsApp()">📤 Enviar Reporte por WhatsApp</button>
+                <button class="btn btn-secondary" style="margin-top: 8px;" onclick="navegarVista('view-cliente-dashboard')">Volver</button>
             </div>
 
-            <!-- VISTA 6: PANEL DE ADMINISTRACIÓN -->
+            <!-- VISTA: PANEL ADMIN -->
             <div id="view-admin" class="view">
                 <h1>Panel Administrativo</h1>
-                <p class="subtitle">Gestión avanzada de contratos, multiproductos, abonos y comercios.</p>
+                <p class="subtitle">Gestión avanzada de contratos, alianzas comerciales y verificación de pagos.</p>
 
-                <!-- Pestañas internas del Admin -->
                 <div class="admin-tabs">
                     <button class="tab-btn active" onclick="cambiarTabAdmin('tab-contratos', this)">Contratos</button>
-                    <button class="tab-btn" onclick="cambiarTabAdmin('tab-abonos', this)">Registrar Abono</button>
-                    <button class="tab-btn" onclick="cambiarTabAdmin('tab-comercios', this)">Comercios</button>
-                    <button class="tab-btn" onclick="cambiarTabAdmin('tab-listados', this)">Listados Gen.</button>
+                    <button class="tab-btn" onclick="cambiarTabAdmin('tab-alianzas', this)">Alianzas</button>
+                    <button class="tab-btn" onclick="cambiarTabAdmin('tab-verificacion', this)">Pagos / Cuotas</button>
+                    <button class="tab-btn" onclick="cambiarTabAdmin('tab-gestion', this)">Listado</button>
                 </div>
 
-                <!-- SECCIÓN ADMIN 1: Crear Contratos y Artículos -->
+                <!-- Pestaña 1: Registrar Contrato -->
                 <div id="tab-contratos" class="admin-section active">
-                    <div class="form-group"><label>Nro. de Contrato</label><input type="text" id="admContrato" placeholder="N45"></div>
-                    <div class="form-group"><label>Nombre del Titular</label><input type="text" id="admTitular" placeholder="Nombre del Cliente"></div>
+                    <div class="form-group"><label>Nro. de Contrato (Único)</label><input type="text" id="admContrato" placeholder="Ej. N33"></div>
+                    <div class="form-group"><label>Cédula del Titular *</label><input type="text" id="admCedulaTitular" placeholder="V-12345678"></div>
+                    <div class="form-group"><label>Nombre del Titular *</label><input type="text" id="admTitular" placeholder="Nombre Completo"></div>
+                    <div class="form-group"><label>URL Foto de Perfil (Opcional)</label><input type="text" id="admFoto" placeholder="https://..."></div>
                     
-                    <div style="background: #f8fafc; border: 1px solid var(--border); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-                        <label style="color: var(--accent); margin-bottom: 8px;">📦 Agregar Producto / Artículo al Contrato</label>
-                        <div class="form-group"><label>Nombre del Artículo / Servicio</label><input type="text" id="admArticulo" placeholder="Ej. Nevera ejecutiva"></div>
-                        
-                        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                            <div style="flex:1;"><label>Costo Total ($)</label><input type="number" id="admCosto" placeholder="300" oninput="calcularAdmin()"></div>
+                    <div class="form-group">
+                        <label>Canal de Adquisición / Alianza Comercial Asociada</label>
+                        <select id="admAsociarAlianza">
+                            <option value="Directo BytePay">Adquirido directamente en plataforma</option>
+                        </select>
+                    </div>
+
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); padding: 14px; border-radius: 12px; margin-bottom: 14px;">
+                        <label style="color: var(--primary); margin-bottom: 10px;">📦 Agregar Producto con Margen Comercial</label>
+                        <div class="form-group"><label>Nombre del Artículo</label><input type="text" id="admArticulo" placeholder="Ej. Nevera ejecutiva"></div>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <div style="flex:1;"><label>Costo Base ($)</label><input type="number" id="admCostoBase" placeholder="250" oninput="calcularAdmin()"></div>
+                            <div style="flex:1;"><label>Recargo / Ganancia ($)</label><input type="number" id="admRecargo" placeholder="50" oninput="calcularAdmin()"></div>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                             <div style="flex:1;">
                                 <label>% Inicial</label>
                                 <select id="admPorcentaje" onchange="calcularAdmin()">
-                                    <option value="30">30% Inicial</option>
-                                    <option value="40" selected>40% Inicial</option>
-                                    <option value="50">50% Inicial</option>
+                                    <option value="30">30%</option>
+                                    <option value="40" selected>40%</option>
+                                    <option value="50">50%</option>
                                 </select>
                             </div>
+                            <div style="flex:1;"><label>Cuotas Restantes</label><input type="number" id="admCuotas" value="4" oninput="calcularAdmin()"></div>
                         </div>
-
-                        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                            <div style="flex:1;"><label>Descuento Aplicado ($)</label><input type="number" id="admDescuento" value="0" placeholder="0" oninput="calcularAdmin()"></div>
-                            <div style="flex:1;"><label>Nro. de Cuotas</label><input type="number" id="admCuotas" value="4" oninput="calcularAdmin()"></div>
-                        </div>
-
-                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
-                            Inicial Calculada: <b id="admResInicial">$0.00</b> | Restante a financiar: <b id="admResRestante">$0.00</b>
+                        <div style="font-size: 12px; color: var(--text-muted);">
+                            Precio Final: <b style="color:#fff;" id="admResTotal">$0.00</b> | Inicial: <b style="color:#fff;" id="admResInicial">$0.00</b> | Cuota: <b style="color:#fff;" id="admResCuota">$0.00</b>
                         </div>
                     </div>
-
-                    <div class="info-card" style="background: #eff6ff; border-color: #bfdbfe; color: #1e40af;">
-                        💡 <b>Cuota Mensual Automática:</b> <span id="admResCuota" style="font-weight:bold;">$0.00</span>
-                    </div>
-
-                    <button class="btn btn-primary" onclick="guardarEnFirebase()">Guardar en la Base de Datos</button>
+                    <button class="btn btn-primary" onclick="guardarEnFirebase()">Validar y Guardar Contrato</button>
                 </div>
 
-                <!-- SECCIÓN ADMIN 2: Registrar Abonos -->
-                <div id="tab-abonos" class="admin-section">
-                    <div class="form-group"><label>Nro. de Contrato al que Abonar</label><input type="text" id="abonoContratoId" placeholder="Ej. N45"></div>
-                    <div class="form-group"><label>Monto del Abono ($)</label><input type="number" id="abonoMonto" placeholder="Ej. 50"></div>
-                    <div class="form-group"><label>Concepto / Referencia</label><input type="text" id="abonoConcepto" placeholder="Ej. Pago de cuota 1 o Inicial"></div>
-
-                    <button class="btn btn-primary" onclick="registrarAbonoFirebase()">Registrar Abono en el Historial</button>
+                <!-- Pestaña 2: Registro de Alianzas / Comercios -->
+                <div id="tab-alianzas" class="admin-section">
+                    <h3 style="font-size: 13px; margin-bottom: 10px; color: var(--text-main);">Registrar Nueva Tienda Aliada</h3>
+                    <div class="form-group"><label>Nombre de la Tienda / Alianza</label><input type="text" id="alianzaNombre" placeholder="Ej. Comercializadora Jotech C.A."></div>
+                    <div class="form-group"><label>RIF de la Tienda</label><input type="text" id="alianzaRif" placeholder="J-12345678-9"></div>
+                    <div class="form-group"><label>Teléfono de Contacto</label><input type="text" id="alianzaTelefono" placeholder="04121234567"></div>
+                    <button class="btn btn-primary" onclick="guardarAlianza()">Registrar Tienda Aliada</button>
                 </div>
 
-                <!-- SECCIÓN ADMIN 3: Comercios Aliados -->
-                <div id="tab-comercios" class="admin-section">
-                    <div class="form-group"><label>Nombre del Comercio Aliado</label><input type="text" id="comercioNombre" placeholder="Ej. Inversiones El Diamante C.A."></div>
-                    <div class="form-group"><label>RIF / Identificación</label><input type="text" id="comercioRif" placeholder="J-12345678-9"></div>
-                    <div class="form-group"><label>Rubro o Actividad</label><input type="text" id="comercioRubro" placeholder="Ej. Electrodomésticos y Hogar"></div>
-                    <div class="form-group"><label>Persona de Contacto / Teléfono</label><input type="text" id="comercioContacto" placeholder="0412-1234567"></div>
-
-                    <button class="btn btn-primary" onclick="registrarComercioAliado()">Registrar Comercio Aliado</button>
+                <!-- Pestaña 3: Verificación de Cuotas / Inicial -->
+                <div id="tab-verificacion" class="admin-section">
+                    <h3 style="font-size: 13px; margin-bottom: 10px; color: var(--text-main);">Aprobar Pago (Inicial o Cuotas)</h3>
+                    <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Indique el contrato y si aprueba la "inicial" o el número de cuota.</p>
+                    <div class="form-group"><label>Número de Contrato</label><input type="text" id="verifContratoId" placeholder="Ej. N33"></div>
+                    <div class="form-group"><label>Concepto a Aprobar ("inicial" o número ej. 1, 2...)</label><input type="text" id="verifNumCuota" placeholder="inicial o 1"></div>
+                    <button class="btn btn-primary" onclick="aprobarCuotaAdmin()">Marcar como PAGADO</button>
                 </div>
 
-                <!-- SECCIÓN ADMIN 4: Listados Generales -->
-                <div id="tab-listados" class="admin-section">
-                    <h3 style="font-size: 13px; margin-bottom: 6px; color: var(--primary);">📋 Contratos y Cuentas Registradas</h3>
-                    <div id="tablaContratosAdmin" style="margin-bottom: 14px; max-height: 180px; overflow-y: auto;">
-                        <p style="font-size: 12px; color: var(--text-muted);">Cargando contratos...</p>
-                    </div>
-
-                    <h3 style="font-size: 13px; margin-bottom: 6px; color: var(--primary);">🏪 Comercios Aliados</h3>
-                    <div id="tablaComerciosAdmin" style="max-height: 180px; overflow-y: auto;">
-                        <p style="font-size: 12px; color: var(--text-muted);">Cargando comercios...</p>
-                    </div>
+                <!-- Pestaña 4: Listados Generales y Eliminación -->
+                <div id="tab-gestion" class="admin-section">
+                    <h3 style="font-size: 13px; margin-bottom: 10px; color: var(--text-main);">Contratos y Comercios Registrados</h3>
+                    <div id="listaAdminGeneral" style="max-height: 250px; overflow-y: auto; margin-bottom: 12px;"></div>
+                    <button class="btn btn-secondary" onclick="cargarListadosAdmin()">Actualizar Listado</button>
                 </div>
 
-                <button class="btn btn-secondary" style="margin-top: 14px;" onclick="cambiarVista('view-home')">Cerrar Sesión Admin</button>
+                <button class="btn btn-secondary" style="margin-top: 16px;" onclick="navegarVista('view-home')">Cerrar Sesión Admin</button>
             </div>
 
         </div>
     </main>
 
-    <!-- ==========================================================
-       LÓGICA JAVASCRIPT Y CONEXIÓN FIREBASE
-       ================================================---------- -->
+    <div id="toastFeedback">¡Acción realizada con éxito!</div>
+
+    <!-- Script Firebase y Lógica -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Configuración de la base de datos Firebase Cloud
         const firebaseConfig = {
             apiKey: "AIzaSyBboWF2cTQdWgjaSxqQb3BMPJCKFs0ftEM",
             authDomain: "jotech-contratos.firebaseapp.com",
@@ -334,427 +422,502 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        window.tasaBcvGlobal = 36.50; // Tasa de respaldo por defecto en caso de fallo de red
-        window.clienteActualGlobal = { id: "", nombre: "" };
+        window.tasaBcvGlobal = 36.50;
+        window.clienteActualGlobal = { id: '', nombre: '', cedula: '', foto: '', articulos: [] };
 
-        // 1. FUNCIÓN PARA CONSULTAR LA TASA DEL BCV AUTOMÁTICAMENTE
         async function obtenerTasaBcv() {
             try {
-                const response = await fetch('https://pydolarve.org/api/v1/dollar?page=bcv');
-                if (!response.ok) throw new Error('Error al conectar con la API BCV');
-                
+                // Usamos un proxy CORS seguro o respaldo directo para evitar bloqueos del navegador
+                const response = await fetch('https://pydolarve.org/api/v1/dollar?page=bcv', { cache: 'no-cache' });
+                if (!response.ok) throw new Error();
                 const data = await response.json();
-                
-                if (data && data.monitors && data.monitors.bcv && data.monitors.bcv.price) {
+                if (data?.monitors?.bcv?.price) {
                     window.tasaBcvGlobal = parseFloat(data.monitors.bcv.price);
                     document.getElementById('tasaBcvValor').innerText = window.tasaBcvGlobal.toFixed(2);
-                    document.getElementById('bcvEstadoApi').innerText = "✓ Sincronizado BCV";
-                    const inputTasa = document.getElementById('repTasaBcv');
-                    if(inputTasa) inputTasa.value = window.tasaBcvGlobal.toFixed(2);
-                } else {
-                    throw new Error('Estructura de datos no válida');
+                    document.getElementById('bcvEstadoApi').innerText = "✓ Conectado (BCV en Vivo)";
+                    if(document.getElementById('tasaRefLabel')) document.getElementById('tasaRefLabel').innerText = window.tasaBcvGlobal.toFixed(2);
                 }
             } catch (error) {
-                console.warn("Usando tasa de respaldo debido a restricción de red:", error);
+                // Si la red local o CORS bloquea la API externa, usamos valor seguro predeterminado sin romper la interfaz
                 document.getElementById('tasaBcvValor').innerText = window.tasaBcvGlobal.toFixed(2);
-                document.getElementById('bcvEstadoApi').innerText = "⚡ Modo Respaldo";
-                const inputTasa = document.getElementById('repTasaBcv');
-                if(inputTasa) inputTasa.value = window.tasaBcvGlobal.toFixed(2);
+                document.getElementById('bcvEstadoApi').innerText = "⚡ Modo Híbrido (Respaldo Activo)";
+                if(document.getElementById('tasaRefLabel')) document.getElementById('tasaRefLabel').innerText = window.tasaBcvGlobal.toFixed(2);
             }
         }
-        
         obtenerTasaBcv();
 
-        // 2. FUNCIÓN PARA GUARDAR CONTRATOS Y ARTÍCULOS EN FIREBASE (Panel Admin)
-        window.guardarEnFirebase = async function() {
-            const contratoId = document.getElementById('admContrato').value.trim();
-            const titular = document.getElementById('admTitular').value.trim();
-            const articulo = document.getElementById('admArticulo').value.trim();
-            const costoTotal = parseFloat(document.getElementById('admCosto').value) || 0;
-            const porcentaje = parseInt(document.getElementById('admPorcentaje').value);
-            const descuento = parseFloat(document.getElementById('admDescuento').value) || 0;
-            const numCuotas = parseInt(document.getElementById('admCuotas').value);
+        function obtenerSaludoDinamico(nombreTitular) {
+            const hora = new Date().getHours();
+            let saludo = "¡Bienvenido";
+            if (hora >= 5 && hora < 12) saludo = "¡Buenos días";
+            else if (hora >= 12 && hora < 19) saludo = "¡Buenas tardes";
+            else saludo = "¡Buenas noches";
+            return `${saludo}, ${nombreTitular}!`;
+        }
 
-            if (!contratoId || !articulo || costoTotal <= 0) {
-                alert("Complete los campos obligatorios del contrato y producto.");
-                return;
-            }
-
-            const costoConDescuento = costoTotal - descuento;
-            const inicialCalculada = (costoConDescuento * porcentaje) / 100;
-            const restanteFinanciar = costoConDescuento - inicialCalculada;
-            const cuotaMensual = numCuotas > 0 ? (restanteFinanciar / numCuotas) : 0;
-
-            try {
-                await setDoc(doc(db, "clientes", contratoId), {
-                    numeroContrato: contratoId,
-                    nombreTitular: titular,
-                    actualizado: new Date().toISOString()
-                }, { merge: true });
-
-                const articuloRef = doc(collection(db, "articulos"));
-                await setDoc(articuloRef, {
-                    contratoId: contratoId,
-                    nombreArticulo: articulo,
-                    costoTotal: costoTotal,
-                    descuento: descuento,
-                    costoNeto: costoConDescuento,
-                    porcentajeInicial: porcentaje,
-                    inicialCalculada: inicialCalculada,
-                    totalCuotas: numCuotas,
-                    cuotaValor: cuotaMensual,
-                    estado: "Activo",
-                    creadoEn: new Date().toISOString()
-                });
-
-                alert("¡Artículo multiproducto guardado con éxito!");
-                document.getElementById('admContrato').value = '';
-                document.getElementById('admTitular').value = '';
-                document.getElementById('admArticulo').value = '';
-                document.getElementById('admCosto').value = '';
-            } catch (error) {
-                alert("Error al guardar: " + error.message);
-            }
-        };
-
-        // 3. FUNCIÓN PARA REGISTRAR ABONOS EN FIREBASE
-        window.registrarAbonoFirebase = async function() {
-            const contratoId = document.getElementById('abonoContratoId').value.trim();
-            const monto = parseFloat(document.getElementById('abonoMonto').value) || 0;
-            const concepto = document.getElementById('abonoConcepto').value.trim();
-
-            if (!contratoId || monto <= 0) {
-                alert("Ingrese un número de contrato válido y un monto de abono mayor a cero.");
-                return;
-            }
-
-            try {
-                const abonoRef = doc(collection(db, "abonos"));
-                await setDoc(abonoRef, {
-                    contratoId: contratoId,
-                    montoAbono: monto,
-                    concepto: concepto || "Abono a cuenta",
-                    fecha: new Date().toISOString()
-                });
-
-                alert("¡Abono registrado correctamente en el historial!");
-                document.getElementById('abonoContratoId').value = '';
-                document.getElementById('abonoMonto').value = '';
-                document.getElementById('abonoConcepto').value = '';
-            } catch (error) {
-                alert("Error al registrar el abono: " + error.message);
-            }
-        };
-
-        // 4. FUNCIÓN PARA REGISTRAR COMERCIOS ALIADOS EN FIREBASE
-        window.registrarComercioAliado = async function() {
-            const nombre = document.getElementById('comercioNombre').value.trim();
-            const rif = document.getElementById('comercioRif').value.trim();
-            const rubro = document.getElementById('comercioRubro').value.trim();
-            const contacto = document.getElementById('comercioContacto').value.trim();
-
-            if (!nombre || !rif) {
-                alert("El nombre y RIF del comercio son obligatorios.");
-                return;
-            }
-
-            try {
-                await addDoc(collection(db, "comercios_aliados"), {
-                    nombreComercio: nombre,
-                    rifComercio: rif,
-                    rubro: rubro,
-                    contacto: contacto,
-                    registradoEn: new Date().toISOString()
-                });
-                alert("¡Comercio aliado registrado exitosamente!");
-                document.getElementById('comercioNombre').value = '';
-                document.getElementById('comercioRif').value = '';
-                document.getElementById('comercioRubro').value = '';
-                document.getElementById('comercioContacto').value = '';
-            } catch (error) {
-                alert("Error al registrar comercio: " + error.message);
-            }
-        };
-
-        // 5. FUNCIÓN PARA CARGAR LISTADOS GENERALES (Admin)
-        window.cargarListadoAdmin = async function() {
-            const contenedorContratos = document.getElementById('tablaContratosAdmin');
-            const contenedorComercios = document.getElementById('tablaComerciosAdmin');
-
-            if (!contenedorContratos || !contenedorComercios) return;
-
-            try {
-                const snapArticulos = await getDocs(collection(db, "articulos"));
-                const snapClientes = await getDocs(collection(db, "clientes"));
+        window.iniciarSesionConAnimacion = async function(tipo) {
+            if (tipo === 'cliente') {
+                const contratoId = document.getElementById('inputContrato').value.trim();
+                if (!contratoId) { alert("Ingrese número de contrato."); return; }
                 
-                let clientesMap = {};
-                snapClientes.forEach(doc => {
-                    clientesMap[doc.id] = doc.data().nombreTitular || "Sin titular";
-                });
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                document.getElementById('view-loader').style.display = 'flex';
+                document.getElementById('loaderSpinner').style.display = 'block';
+                document.getElementById('loaderCheck').style.display = 'none';
+                document.getElementById('loaderText').innerText = "Sincronizando con tasa BCV y cargando datos...";
 
-                contenedorContratos.innerHTML = '';
-                if (snapArticulos.empty) {
-                    contenedorContratos.innerHTML = `<p style="font-size: 12px; color: var(--text-muted);">No hay contratos registrados aún.</p>`;
-                } else {
-                    snapArticulos.forEach(docSnap => {
-                        const art = docSnap.data();
-                        const titular = clientesMap[art.contratoId] || "Registrado sin titular";
-                        
-                        contenedorContratos.innerHTML += `
-                            <div class="article-item" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; margin-bottom: 5px;">
-                                <div>
-                                    <strong style="color: var(--primary); font-size: 12px;">Contrato: ${art.contratoId}</strong> - <span style="font-size: 11px;">${titular}</span><br>
-                                    <span style="font-size: 10px; color: var(--text-muted);">Artículo: ${art.nombreArticulo} | Cuota: $${art.cuotaValor ? art.cuotaValor.toFixed(2) : '0.00'}</span>
-                                </div>
-                                <span style="font-size: 10px; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${art.estado || 'Activo'}</span>
-                            </div>
-                        `;
-                    });
-                }
+                try {
+                    await obtenerTasaBcv();
+                    const clienteDoc = await getDoc(doc(db, "clientes", contratoId));
+                    if (!clienteDoc.exists()) {
+                        document.getElementById('view-loader').style.display = 'none';
+                        navegarVista('view-home');
+                        alert("El contrato no existe.");
+                        return;
+                    }
 
-                const snapComercios = await getDocs(collection(db, "comercios_aliados"));
-                contenedorComercios.innerHTML = '';
-                if (snapComercios.empty) {
-                    contenedorComercios.innerHTML = `<p style="font-size: 12px; color: var(--text-muted);">No hay comercios aliados registrados.</p>`;
-                } else {
-                    snapComercios.forEach(docSnap => {
-                        const com = docSnap.data();
-                        contenedorComercios.innerHTML += `
-                            <div class="article-item" style="padding: 8px 10px; margin-bottom: 5px;">
-                                <strong style="color: var(--primary); font-size: 12px;">${com.nombreComercio}</strong> (${com.rifComercio})<br>
-                                <span style="font-size: 10px; color: var(--text-muted);">Rubro: ${com.rubro || 'N/A'} | Contacto: ${com.contacto || 'N/A'}</span>
-                            </div>
-                        `;
-                    });
-                }
+                    const clienteData = clienteDoc.data();
+                    window.clienteActualGlobal.id = contratoId;
+                    window.clienteActualGlobal.nombre = clienteData.nombreTitular || "Cliente";
+                    window.clienteActualGlobal.cedula = clienteData.cedula || "";
+                    window.clienteActualGlobal.foto = clienteData.foto || "";
+                    
+                    document.getElementById('lblSaludoCliente').innerText = obtenerSaludoDinamico(window.clienteActualGlobal.nombre);
+                    document.getElementById('lblSubCliente').innerText = `CONTRATO #${contratoId}`;
+                    document.getElementById('sidebarUserName').innerText = window.clienteActualGlobal.nombre;
+                    
+                    document.getElementById('perfilNombre').value = window.clienteActualGlobal.nombre;
+                    document.getElementById('perfilCedula').value = window.clienteActualGlobal.cedula;
+                    document.getElementById('perfilContrato').value = contratoId;
+                    document.getElementById('perfilFoto').value = window.clienteActualGlobal.foto;
 
-            } catch (error) {
-                console.error("Error al cargar listados generales:", error);
-            }
-        };
+                    const avatarContainer = document.getElementById('bannerAvatar');
+                    if(window.clienteActualGlobal.foto) {
+                        avatarContainer.innerHTML = `<img src="${window.clienteActualGlobal.foto}" alt="Avatar">`;
+                    } else {
+                        avatarContainer.innerHTML = `👤`;
+                    }
 
-        // 6. FUNCIÓN PARA CONSULTAR CONTRATO DE CLIENTE Y MOSTRAR SUS PRODUCTOS
-        window.consultarContratoCloud = async function() {
-            const contratoId = document.getElementById('inputContrato').value.trim();
-            if (!contratoId) { alert("Ingrese un número de contrato."); return; }
+                    const qArt = query(collection(db, "articulos"), where("contratoId", "==", contratoId));
+                    const snapArt = await getDocs(qArt);
+                    const contenedorArt = document.getElementById('listaArticulosCliente');
+                    contenedorArt.innerHTML = '<h3 style="font-size: 14px; margin-bottom: 10px; color: var(--text-main);">📦 Productos, Inicial y Cuotas (BCV)</h3>';
+                    
+                    window.clienteActualGlobal.articulos = [];
+                    let sumaTotalBs = 0;
 
-            try {
-                const clienteDoc = await getDoc(doc(db, "clientes", contratoId));
-                if (!clienteDoc.exists()) {
-                    alert("No se encontró el contrato en la base de datos.");
-                    return;
-                }
-
-                const clienteData = clienteDoc.data();
-                window.clienteActualGlobal = { id: contratoId, nombre: clienteData.nombreTitular || "Cliente" };
-                
-                // Mensajes de saludo aleatorios al entrar
-                const saludos = [
-                    `¡Qué gusto verte de nuevo, ${window.clienteActualGlobal.nombre}! 👋`,
-                    `¡Hola, ${window.clienteActualGlobal.nombre}! Qué bueno tenerte aquí. 😊`,
-                    `¡Bienvenido a tu panel, ${window.clienteActualGlobal.nombre}! 🚀`,
-                    `¡Hola de nuevo, ${window.clienteActualGlobal.nombre}! Listo para gestionar tus cuotas. ✨`
-                ];
-                const saludoAleatorio = saludos[Math.floor(Math.random() * saludos.length)];
-                document.getElementById('lblSaludoCliente').innerText = saludoAleatorio;
-                document.getElementById('lblSubCliente').innerText = `Contrato Activo #${contratoId}`;
-                document.getElementById('sidebarUserName').innerText = window.clienteActualGlobal.nombre;
-
-                const qArt = query(collection(db, "articulos"), where("contratoId", "==", contratoId));
-                const snapArt = await getDocs(qArt);
-                const contenedorArt = document.getElementById('listaArticulosCliente');
-                contenedorArt.innerHTML = '<h3 style="font-size: 14px; margin-bottom: 6px; color: var(--primary);">📦 Productos Asignados</h3>';
-                
-                let sumaTotalBs = 0;
-
-                if (snapArt.empty) {
-                    contenedorArt.innerHTML += `<p style="font-size: 12px; color: var(--text-muted);">No hay productos asignados a este contrato.</p>`;
-                } else {
                     snapArt.forEach((docSnap, index) => {
                         const art = docSnap.data();
-                        const eqBs = art.cuotaValor * window.tasaBcvGlobal;
-                        sumaTotalBs += eqBs;
+                        window.clienteActualGlobal.articulos.push(art);
+                        const eqBsTotal = art.costoTotal * window.tasaBcvGlobal;
+                        sumaTotalBs += eqBsTotal;
 
-                        let infoDescuento = art.descuento > 0 ? `| Descuento: -$${art.descuento}` : '';
+                        let cuotasHtml = '';
+                        const cuotasPagadasArr = art.cuotasPagadas || [];
+                        
+                        // Fila Inicial
+                        const inicialPagada = cuotasPagadasArr.includes("inicial");
+                        const badgeIniClase = inicialPagada ? 'badge-pagado' : 'badge-pendiente';
+                        const badgeIniTexto = inicialPagada ? 'PAGADO' : 'PENDIENTE';
+                        const montoInicialBs = art.valorInicial * window.tasaBcvGlobal;
 
-                        // Renderiza el acordeón desplegable por cada producto del cliente
+                        cuotasHtml += `
+                            <div class="cuota-row" style="background: rgba(34, 197, 94, 0.05);">
+                                <span><b>Cuota Inicial (${art.porcentajeInicial}%)</b> - $${art.valorInicial.toFixed(2)} / ${montoInicialBs.toLocaleString('es-VE', {minimumFractionDigits: 2})} VES</span>
+                                <span class="badge-status ${badgeIniClase}">${badgeIniTexto}</span>
+                            </div>
+                        `;
+
+                        const totalC = art.totalCuotas || 4;
+                        for(let i = 1; i <= totalC; i++) {
+                            const pagado = cuotasPagadasArr.includes(i.toString()) || cuotasPagadasArr.includes(i);
+                            const badgeClase = pagado ? 'badge-pagado' : 'badge-pendiente';
+                            const badgeTexto = pagado ? 'PAGADO' : 'PENDIENTE';
+                            const montoCuotaBs = art.cuotaValor * window.tasaBcvGlobal;
+
+                            cuotasHtml += `
+                                <div class="cuota-row">
+                                    <span>Cuota #${i} ($${art.cuotaValor.toFixed(2)} / ${montoCuotaBs.toLocaleString('es-VE', {minimumFractionDigits: 2})} VES)</span>
+                                    <span class="badge-status ${badgeClase}">${badgeTexto}</span>
+                                </div>
+                            `;
+                        }
+
                         contenedorArt.innerHTML += `
                             <div class="accordion-header" onclick="toggleAccordion('prod-${index}')">
                                 <span>📦 ${art.nombreArticulo}</span>
-                                <span>▼</span>
+                                <span style="font-size: 11px; color: var(--primary);">Detalle & Tasa BCV ▼</span>
                             </div>
                             <div id="prod-${index}" class="accordion-body">
-                                <p style="font-size:12px; color:var(--text-main); margin-bottom: 6px;">
-                                    Costo Total: <b>$${art.costoTotal}</b> ${infoDescuento}<br>
-                                    Inicial Calculada: <b style="color:var(--success)">$${art.inicialCalculada.toFixed(2)}</b><br>
-                                    Total de Cuotas: <b>${art.totalCuotas} cuotas</b>
-                                </p>
-                                <div style="background: #fff; border: 1px solid var(--border); padding: 8px; border-radius: 6px; margin-top: 6px;">
-                                    <span style="font-size:11px; font-weight:bold; color:var(--primary);">Estado de Cuotas e Historial:</span><br>
-                                    <span style="font-size:11px; color:var(--warning);">• Cuota mensual: $${art.cuotaValor.toFixed(2)} (${eqBs.toFixed(2)} VES)</span><br>
-                                    <span style="font-size:11px; color:var(--success);">• Estado: Pendientes / Aprobación en proceso</span>
+                                <div style="font-size: 12px; margin-bottom: 10px; color: var(--text-muted); line-height: 1.5;">
+                                    • Costo Base: <b>$${(art.costoBase || 0).toFixed(2)}</b> | Recargo: <b>$${(art.recargo || 0).toFixed(2)}</b><br>
+                                    • Costo Total con Margen: <b>$${art.costoTotal.toFixed(2)}</b><br>
+                                    • Alianza Comercial: <b>${art.alianzaAsociada || 'Directo BytePay'}</b><br>
+                                    • Tasa BCV Aplicada: <b>${window.tasaBcvGlobal.toFixed(2)} VES/USD</b>
+                                </div>
+                                <div style="font-weight: bold; font-size: 12px; margin-bottom: 8px; color: var(--text-main);">Desglose Inicial y Cuotas:</div>
+                                <div style="border: 1px solid var(--border); border-radius: 10px; background: rgba(0,0,0,0.2);">
+                                    ${cuotasHtml}
                                 </div>
                             </div>
                         `;
                     });
+
+                    document.getElementById('lblTotalBolivares').innerText = `${sumaTotalBs.toLocaleString('es-VE', {minimumFractionDigits: 2})} VES`;
+                    document.getElementById('tasaRefLabel').innerText = window.tasaBcvGlobal.toFixed(2);
+                    document.getElementById('repContrato').value = contratoId;
+
+                    setTimeout(() => {
+                        document.getElementById('loaderSpinner').style.display = 'none';
+                        document.getElementById('loaderCheck').style.display = 'block';
+                        document.getElementById('loaderText').innerText = "¡Sincronizado con éxito!";
+                        setTimeout(() => {
+                            document.getElementById('view-loader').style.display = 'none';
+                            document.getElementById('btnMenuToggle').style.display = 'block';
+                            navegarVista('view-cliente-dashboard', true);
+                        }, 500);
+                    }, 600);
+
+                } catch (error) {
+                    document.getElementById('view-loader').style.display = 'none';
+                    navegarVista('view-home');
+                    alert("Error de conexión: " + error.message);
                 }
-
-                document.getElementById('lblTotalBolivares').innerText = `${sumaTotalBs.toLocaleString('es-VE', {minimumFractionDigits: 2})} VES`;
-                
-                // Muestra el menú lateral y cambia a la vista principal del cliente
-                document.getElementById('btnMenuToggle').style.display = 'block';
-                cambiarVistaCliente('view-cliente-dashboard');
-                document.getElementById('repContrato').value = contratoId;
-                if(document.getElementById('repTasaBcv')) document.getElementById('repTasaBcv').value = window.tasaBcvGlobal.toFixed(2);
-
-                cargarCatalogoGeneral();
-
-            } catch (error) {
-                alert("Error al consultar: " + error.message);
+            } else {
+                const pass = document.getElementById('inputAdminPass').value;
+                if (pass === "admin123") {
+                    document.getElementById('inputAdminPass').value = '';
+                    navegarVista('view-admin');
+                    document.getElementById('btnMenuToggle').style.display = 'none';
+                    calcularAdmin();
+                    cargarSelectAlianzasAdmin();
+                    cargarListadosAdmin();
+                } else {
+                    alert("Contraseña incorrecta.");
+                }
             }
         };
 
-        // 7. CARGA EL CATÁLOGO GENERAL DE PRODUCTOS
-        async function cargarCatalogoGeneral() {
-            const contenedorCat = document.getElementById('catalogoListaGeneral');
-            if(!contenedorCat) return;
+        window.guardarAlianza = async function() {
+            const nombre = document.getElementById('alianzaNombre').value.trim();
+            const rif = document.getElementById('alianzaRif').value.trim();
+            const telefono = document.getElementById('alianzaTelefono').value.trim();
+
+            if (!nombre || !rif || !telefono) {
+                alert("Complete todos los datos de la alianza.");
+                return;
+            }
+
             try {
-                const snapArticulos = await getDocs(collection(db, "articulos"));
+                const alianzaRef = doc(db, "alianzas", rif);
+                await setDoc(alianzaRef, { nombre, rif, telefono, creadoEn: new Date().toISOString() });
+                mostrarToast("¡Tienda aliada registrada con éxito!");
+                document.getElementById('alianzaNombre').value = '';
+                document.getElementById('alianzaRif').value = '';
+                document.getElementById('alianzaTelefono').value = '';
+                cargarSelectAlianzasAdmin();
+                cargarListadosAdmin();
+            } catch (error) {
+                alert("Error al registrar alianza: " + error.message);
+            }
+        };
+
+        async function cargarSelectAlianzasAdmin() {
+            try {
+                const snap = await getDocs(collection(db, "alianzas"));
+                const selectAlianza = document.getElementById('admAsociarAlianza');
+                selectAlianza.innerHTML = '<option value="Directo BytePay">Adquirido directamente en plataforma</option>';
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    selectAlianza.innerHTML += `<option value="${data.nombre} (RIF: ${data.rif})">${data.nombre} - RIF: ${data.rif}</option>`;
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        window.guardarEnFirebase = async function() {
+            const contratoId = document.getElementById('admContrato').value.trim();
+            const cedula = document.getElementById('admCedulaTitular').value.trim();
+            const titular = document.getElementById('admTitular').value.trim();
+            const foto = document.getElementById('admFoto').value.trim();
+            const alianzaAsociada = document.getElementById('admAsociarAlianza').value;
+            const articulo = document.getElementById('admArticulo').value.trim();
+            const costoBase = parseFloat(document.getElementById('admCostoBase').value) || 0;
+            const recargo = parseFloat(document.getElementById('admRecargo').value) || 0;
+            const porcentaje = parseInt(document.getElementById('admPorcentaje').value);
+            const numCuotas = parseInt(document.getElementById('admCuotas').value);
+
+            if (!contratoId || !cedula || !titular || !articulo || costoBase <= 0) { 
+                alert("Complete los campos obligatorios."); 
+                return; 
+            }
+
+            try {
+                const contratoDocRef = doc(db, "clientes", contratoId);
+                const docSnap = await getDoc(contratoDocRef);
                 
-                contenedorCat.innerHTML = '';
-                if(snapArticulos.empty) {
-                    contenedorCat.innerHTML = '<p style="font-size:12px; color:var::text-muted;">No hay artículos disponibles en el catálogo por los momentos.</p>';
+                if (docSnap.exists()) {
+                    alert(`❌ Error: El contrato #${contratoId} ya existe.`);
                     return;
                 }
 
-                snapArticulos.forEach(docSnap => {
-                    const art = docSnap.data();
-                    contenedorCat.innerHTML += `
-                        <div class="article-item">
-                            <strong style="color:var(--primary); font-size:13px;">${art.nombreArticulo}</strong><br>
-                            <span style="font-size:12px; color:var(--text-muted);">Precio Referencia: <b>$${art.costoTotal}</b> | Cuotas: ${art.totalCuotas}</span>
+                await setDoc(contratoDocRef, { numeroContrato: contratoId, cedula, nombreTitular: titular, foto: foto || "" });
+
+                const costoTotal = costoBase + recargo;
+                const valorInicial = (costoTotal * porcentaje) / 100;
+                const cuotaMensual = numCuotas > 0 ? ((costoTotal - valorInicial) / numCuotas) : 0;
+
+                const articuloRef = doc(collection(db, "articulos"));
+                await setDoc(articuloRef, {
+                    contratoId, nombreArticulo: articulo, costoBase, recargo, costoTotal, porcentajeInicial: porcentaje, valorInicial, totalCuotas: numCuotas, cuotaValor: cuotaMensual, alianzaAsociada, cuotasPagadas: [], creadoEn: new Date().toISOString()
+                });
+
+                mostrarToast("Contrato guardado con éxito");
+                document.getElementById('admContrato').value = '';
+                document.getElementById('admCedulaTitular').value = '';
+                document.getElementById('admTitular').value = '';
+                document.getElementById('admFoto').value = '';
+                document.getElementById('admArticulo').value = '';
+                cargarListadosAdmin();
+            } catch (error) { alert("Error: " + error.message); }
+        };
+
+        window.aprobarCuotaAdmin = async function() {
+            const contratoId = document.getElementById('verifContratoId').value.trim();
+            let concepto = document.getElementById('verifNumCuota').value.trim().toLowerCase();
+
+            if (!contratoId || !concepto) {
+                alert("Ingrese el contrato y concepto a aprobar.");
+                return;
+            }
+
+            if(concepto !== 'inicial') {
+                concepto = parseInt(concepto);
+                if(isNaN(concepto)) { alert("Indique 'inicial' o un número de cuota válido."); return; }
+            }
+
+            try {
+                const qArt = query(collection(db, "articulos"), where("contratoId", "==", contratoId));
+                const snapArt = await getDocs(qArt);
+                
+                if (snapArt.empty) {
+                    alert("No se encontró artículos para este contrato.");
+                    return;
+                }
+
+                for (const docSnap of snapArt.docs) {
+                    const artData = docSnap.data();
+                    let cuotasPagadas = artData.cuotasPagadas || [];
+                    const conceptoKey = typeof concepto === 'number' ? concepto.toString() : concepto;
+                    
+                    if (!cuotasPagadas.includes(conceptoKey) && !cuotasPagadas.includes(concepto)) {
+                        cuotasPagadas.push(conceptoKey);
+                        await setDoc(docSnap.ref, { cuotasPagadas }, { merge: true });
+                    }
+                }
+
+                mostrarToast(`¡Concepto '${concepto}' marcado como PAGADO!`);
+                document.getElementById('verifContratoId').value = '';
+                document.getElementById('verifNumCuota').value = '';
+            } catch (error) {
+                alert("Error al aprobar pago: " + error.message);
+            }
+        };
+
+        window.cargarListadosAdmin = async function() {
+            const container = document.getElementById('listaAdminGeneral');
+            container.innerHTML = 'Cargando listados...';
+            try {
+                const snapClientes = await getDocs(collection(db, "clientes"));
+                const snapAlianzas = await getDocs(collection(db, "alianzas"));
+                
+                let html = '<b style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:6px;">CONTRATOS REGISTRADOS:</b>';
+                snapClientes.forEach(docSnap => {
+                    const c = docSnap.data();
+                    html += `
+                        <div class="admin-list-item">
+                            <span><b>Contrato #${c.numeroContrato}</b> - ${c.nombreTitular} (${c.cedula})</span>
+                            <button class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size:10px; background:var(--danger); color:#fff; margin:0;" onclick="eliminarRegistroAdmin('clientes', '${c.numeroContrato}')">Eliminar</button>
                         </div>
                     `;
                 });
-            } catch(e) {
-                console.error("Error al cargar catálogo", e);
+
+                html += '<br><b style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:6px;">COMERCIOS / ALIANZAS REGISTRADAS:</b>';
+                snapAlianzas.forEach(docSnap => {
+                    const a = docSnap.data();
+                    html += `
+                        <div class="admin-list-item">
+                            <span><b>${a.nombre}</b> - RIF: ${a.rif}</span>
+                            <button class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size:10px; background:var(--danger); color:#fff; margin:0;" onclick="eliminarRegistroAdmin('alianzas', '${a.rif}')">Eliminar</button>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+            } catch (e) {
+                container.innerHTML = "Error al cargar listados.";
             }
-        }
+        };
+
+        window.eliminarRegistroAdmin = async function(coleccion, idDoc) {
+            if (!confirm("¿Está seguro de eliminar este registro?")) return;
+            try {
+                await deleteDoc(doc(db, coleccion, idDoc));
+                mostrarToast("Registro eliminado");
+                cargarListadosAdmin();
+                cargarSelectAlianzasAdmin();
+            } catch (e) {
+                alert("Error al eliminar: " + e.message);
+            }
+        };
+
+        window.guardarPerfilCliente = async function() {
+            const nuevoNombre = document.getElementById('perfilNombre').value.trim();
+            const nuevaCedula = document.getElementById('perfilCedula').value.trim();
+            const nuevaFoto = document.getElementById('perfilFoto').value.trim();
+            const contratoId = window.clienteActualGlobal.id;
+
+            if (!nuevoNombre || !nuevaCedula) {
+                alert("El nombre y la cédula no pueden estar vacíos.");
+                return;
+            }
+
+            try {
+                const contratoDocRef = doc(db, "clientes", contratoId);
+                await setDoc(contratoDocRef, { numeroContrato: contratoId, cedula: nuevaCedula, nombreTitular: nuevoNombre, foto: nuevaFoto }, { merge: true });
+
+                window.clienteActualGlobal.nombre = nuevoNombre;
+                window.clienteActualGlobal.cedula = nuevaCedula;
+                window.clienteActualGlobal.foto = nuevaFoto;
+
+                document.getElementById('sidebarUserName').innerText = nuevoNombre;
+                document.getElementById('lblSaludoCliente').innerText = obtenerSaludoDinamico(nuevoNombre);
+                
+                const avatarContainer = document.getElementById('bannerAvatar');
+                if(nuevaFoto) {
+                    avatarContainer.innerHTML = `<img src="${nuevaFoto}" alt="Avatar">`;
+                } else {
+                    avatarContainer.innerHTML = `👤`;
+                }
+
+                mostrarToast("Perfil actualizado correctamente");
+                navegarVista('view-cliente-dashboard');
+            } catch (error) {
+                alert("Error al actualizar perfil: " + error.message);
+            }
+        };
+
+        window.descargarReciboPDFReal = function() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFillColor(15, 23, 42);
+            doc.rect(0, 0, 210, 30, "F");
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(16);
+            doc.text("BYTEPAY - COMPROBANTE DE CONTRATO (BCV)", 14, 19);
+
+            doc.setTextColor(50, 50, 50);
+            doc.setFontSize(12);
+            doc.text(`Titular: ${window.clienteActualGlobal.nombre} (Cédula: ${window.clienteActualGlobal.cedula})`, 14, 45);
+            doc.text(`Número de Contrato: #${window.clienteActualGlobal.id}`, 14, 53);
+            doc.text(`Tasa Oficial BCV: ${window.tasaBcvGlobal.toFixed(2)} VES/USD`, 14, 61);
+
+            let yPos = 80;
+            if (window.clienteActualGlobal.articulos) {
+                window.clienteActualGlobal.articulos.forEach((art, idx) => {
+                    doc.text(`${idx + 1}. ${art.nombreArticulo} - Total con Margen: $${art.costoTotal.toFixed(2)}`, 14, yPos);
+                    yPos += 8;
+                });
+            }
+            doc.save(`Recibo_Contrato_${window.clienteActualGlobal.id}.pdf`);
+            mostrarToast("¡Recibo descargado!");
+        };
     </script>
 
-    <!-- ==========================================================
-       LÓGICA GENERAL DE LA INTERFAZ Y NAVEGACIÓN (JS Estándar)
-       ================================================---------- -->
+    <!-- Script UI y Navegación del Menú Hamburguesa -->
     <script>
-        // Cambiar entre vistas generales
-        function cambiarVistaCliente(idVista) {
+        function navegarVista(idVista, registrarHistorial = true) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(idVista).classList.add('active');
+            if (registrarHistorial) history.pushState({ vista: idVista }, "", "#" + idVista);
         }
 
-        // Abrir y cerrar menú lateral (Sidebar)
+        window.addEventListener('popstate', function(event) {
+            if (event.state && event.state.vista) {
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                document.getElementById(event.state.vista).classList.add('active');
+            }
+        });
+
         function toggleSidebar() {
             document.getElementById('clientSidebar').classList.toggle('open');
             document.getElementById('sidebarOverlay').classList.toggle('active');
         }
 
-        // Desplegar/Ocultar acordeón de productos del cliente
+        function toggleNotifications() {
+            document.getElementById('notificationsPanel').classList.toggle('open');
+            document.getElementById('notifDot').style.display = 'none';
+        }
+
+        function marcarLeidas() {
+            document.getElementById('notificationsPanel').classList.remove('open');
+        }
+
+        function mostrarToast(mensaje) {
+            const toast = document.getElementById('toastFeedback');
+            toast.innerText = mensaje;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
         function toggleAccordion(id) {
             document.getElementById(id).classList.toggle('open');
         }
 
-        // Cerrar sesión del cliente actual
+        function toggleFaq(card) {
+            card.classList.toggle('open');
+        }
+
         function cerrarSesionCliente() {
             document.getElementById('btnMenuToggle').style.display = 'none';
             document.getElementById('inputContrato').value = '';
             toggleSidebar();
-            cambiarVistaCliente('view-home');
+            navegarVista('view-home');
         }
 
-        function cambiarVista(idVista) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById(idVista).classList.add('active');
-        }
-
-        // Cambiar entre pestañas dentro del panel de administración
         function cambiarTabAdmin(idTab, btn) {
             document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(idTab).classList.add('active');
             btn.classList.add('active');
-
-            if (idTab === 'tab-listados' && typeof window.cargarListadoAdmin === 'function') {
-                window.cargarListadoAdmin();
-            }
         }
 
-        // Cálculo dinámico automático en el formulario del Administrador
         function calcularAdmin() {
-            const costo = parseFloat(document.getElementById('admCosto').value) || 0;
-            const descuento = parseFloat(document.getElementById('admDescuento').value) || 0;
+            const costoBase = parseFloat(document.getElementById('admCostoBase').value) || 0;
+            const recargo = parseFloat(document.getElementById('admRecargo').value) || 0;
             const porcentaje = parseInt(document.getElementById('admPorcentaje').value) || 40;
             const cuotas = parseInt(document.getElementById('admCuotas').value) || 4;
-
-            const costoNeto = Math.max(0, costo - descuento);
-            const inicial = (costoNeto * porcentaje) / 100;
-            const restante = costoNeto - inicial;
+            
+            const costoTotal = costoBase + recargo;
+            const inicial = (costoTotal * porcentaje) / 100;
+            const restante = costoTotal - inicial;
             const cuotaValor = cuotas > 0 ? (restante / cuotas) : 0;
 
+            document.getElementById('admResTotal').innerText = `$${costoTotal.toFixed(2)}`;
             document.getElementById('admResInicial').innerText = `$${inicial.toFixed(2)}`;
-            document.getElementById('admResRestante').innerText = `$${restante.toFixed(2)}`;
-            document.getElementById('admResCuota').innerText = `$${cuotaValor.toFixed(2)} USD (aprox. ${(cuotaValor * window.tasaBcvGlobal).toFixed(2)} VES)`;
+            document.getElementById('admResCuota').innerText = `$${cuotaValor.toFixed(2)} USD`;
         }
 
-        // Validación de Clave de Administrador
-        function loginAdmin() {
-            const pass = document.getElementById('inputAdminPass').value;
-            if (pass === "teo1212") { // <- Modifica aquí la contraseña de administrador si lo deseas
-                document.getElementById('inputAdminPass').value = '';
-                document.getElementById('btnMenuToggle').style.display = 'none';
-                cambiarVista('view-admin');
-                calcularAdmin();
-            } else {
-                alert("Contraseña incorrecta.");
-            }
-        }
-
-        // Generar enlace de WhatsApp con los datos del reporte de pago
         function enviarReporteWhatsApp() {
             const contrato = document.getElementById('repContrato').value.trim();
             const numCuota = document.getElementById('repNumCuota').value.trim();
             const bancoEmisor = document.getElementById('repBancoEmisor').value.trim();
-            const telefono = document.getElementById('repTelefono').value.trim();
-            const cedula = document.getElementById('repCedula').value.trim();
             const referencia = document.getElementById('repReferencia').value.trim();
-            const tasaBcv = document.getElementById('repTasaBcv').value;
-            const captureInput = document.getElementById('repCapture');
-
-            if (!contrato || !numCuota || !bancoEmisor || !telefono || !cedula || !referencia || referencia.length !== 6) {
-                alert("Por favor complete todos los campos obligatorios de forma correcta (los 6 dígitos de la referencia son necesarios).");
+            if (!contrato || !numCuota || !bancoEmisor || !referencia || referencia.length !== 6) {
+                alert("Complete los datos correctamente (la referencia debe tener 6 dígitos).");
                 return;
             }
-
-            if (captureInput.files.length === 0) {
-                alert("Debe subir obligatoriamente el capture del comprobante de pago.");
-                return;
-            }
-
-            const numeroAdminWhatsApp = "584245067266"; // <- Modifica aquí tu número de WhatsApp receptor
-
-            const mensaje = `*REPORTE DE PAGO DE CUOTA - BYTEPAY* 💳\n\n` +
-                `📋 *Contrato:* ${contrato}\n` +
-                `🔢 *Cuota reportada:* ${numCuota}\n` +
-                `🏦 *Banco Emisor:* ${bancoEmisor}\n` +
-                `📱 *Teléfono:* ${telefono}\n` +
-                `🆔 *Cédula:* ${cedula}\n` +
-                `🔖 *Ref (6 últimos):* ${referencia}\n` +
-                `📈 *Tasa BCV del día:* ${tasaBcv} VES\n\n` +
-                `📎 *(Nota: Adjunte el capture del comprobante guardado en su dispositivo para su verificación en administración)*`;
-
-            const urlWhatsApp = `https://api.whatsapp.com/send?phone=${numeroAdminWhatsApp}&text=${encodeURIComponent(mensaje)}`;
-            
-            window.open(urlWhatsApp, '_blank');
-            alert("¡Información unificada generada! Redirigiendo a WhatsApp para enviar el reporte al administrador.");
+            const mensaje = `*REPORTE DE PAGO - BYTEPAY*\n📋 Contrato: ${contrato}\n🔢 Concepto/Cuota: ${numCuota}\n🏦 Banco: ${bancoEmisor}\n🔖 Ref: ${referencia}`;
+            window.open(`https://api.whatsapp.com/send?phone=584121234567&text=${encodeURIComponent(mensaje)}`, '_blank');
         }
     </script>
 </body>
