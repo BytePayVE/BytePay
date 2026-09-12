@@ -2,21 +2,23 @@
   "name": "BytePay Cloud Pro",
   "short_name": "BytePay",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0b0f19",
   "theme_color": "#0b0f19",
   "description": "Sistema Financiero Cloud Pro y Control de Contratos con Tasa BCV",
   "icons": [
     {
-      "src": "logo.png",
+      "src": "./icon-192.png",
       "sizes": "192x192",
-      "type": "logo.png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=512&h=512&fit=crop",
+      "src": "./icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
-
