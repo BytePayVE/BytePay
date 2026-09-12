@@ -2,8 +2,8 @@ const CACHE_NAME = 'bytepay-cache-v1';
 const assetsToCache = [
   './index.html',
   './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
+  './icono1.png',
+  './icono2.png'
 ];
 
 self.addEventListener('install', (e) => {
@@ -20,4 +20,5 @@ self.addEventListener('fetch', (e) => {
       return response || fetch(e.request);
     })
   );
+});
 });
