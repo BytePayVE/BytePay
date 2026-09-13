@@ -1,21 +1,22 @@
-const CACHE_NAME = 'bytepay-cache-v2';
-const urlsToCache = [
-  '/BytePay/',
-  '/BytePay/index.html'
-];
+const CACHE_NAME = 'bytepay-cache-v3';
+const OFFLINE_URL = '/BytePay/'; // O tu index.html adaptado a la subruta
 
-// Instalación del Service Worker
+importScripts('https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js');
+
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        return cache.addAll(urlsToCache);
-      })
+      .then((cache) => cache.add(OFFLINE_URL))
   );
   self.skipWaiting();
 });
 
-// Activación y limpieza de cachés antiguas
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -31,12 +32,9 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Interceptación de peticiones
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        return response || fetch(event.request);
-      })
-  );
-});
+workbox.routing.registerRoute(
+  new RegExp('/BytePay/.*'),
+  new workbox.strategies.StaleWhileRevalidate({
+    cacheName: CACHE_NAME
+  })
+);
