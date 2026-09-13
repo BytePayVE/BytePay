@@ -4,9 +4,9 @@
   "start_url": "/BytePay/index.html",
   "scope": "/BytePay/",
   "display": "standalone",
-  "background_color": "#0b0f19",
-  "theme_color": "#0b0f19",
-  "description": "Sistema Financiero Cloud Pro y Control de Contratos con Tasa BCV",
+  "background_color": "#4b0f19",
+  "theme_color": "#4b0f19",
+  "description": "Sistema Financiero Cloud Pro y Control de Contratos con Tasa BCV.",
   "icons": [
     {
       "src": "/BytePay/icono1.png",
