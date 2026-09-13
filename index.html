@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BytePay - Sistema Financiero Cloud Pro</title>
+    <title>BYTEPAY VE</title>
     
-    <!-- Configuración PWA / Manifest -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0b0f19">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="BytePay">
 
-    <!-- Librería jsPDF para generación real de recibos -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
     <style>
         :root {
             --container-max-width: 640px;
@@ -51,7 +50,6 @@
         .icon-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); width: 38px; height: 38px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; position: relative; color: var(--text-main); }
         .icon-btn:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
         .badge-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; box-shadow: 0 0 8px var(--danger); }
-
         .menu-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-main); display: none; }
         
         .sidebar {
@@ -145,9 +143,11 @@
         .notif-item { font-size: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); color: var(--text-main); }
 
         #toastFeedback {
-            position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: #fff;
-            padding: 12px 20px; border-radius: 12px; font-size: 13px; font-weight: 600;
-            box-shadow: var(--shadow); border: 1px solid var(--border); z-index: 1500; display: none; transform: translateY(100px); transition: transform 0.3s;
+            position: fixed; bottom: 24px; right: 24px; max-width: 320px; 
+            background: #1e293b; color: #fff; padding: 14px 20px; border-radius: 12px; 
+            font-size: 13px; font-weight: 600; box-shadow: var(--shadow); 
+            border: 1px solid var(--border); z-index: 1500; display: none; 
+            transform: translateY(100px); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         #toastFeedback.show { transform: translateY(0); display: block; }
 
@@ -162,32 +162,29 @@
 </head>
 <body>
 
-    <!-- Header Principal -->
     <header>
         <div class="header-brand">
             <button id="btnMenuToggle" class="menu-btn" onclick="toggleSidebar()" style="display: none;">☰</button>
             <div class="header-logo">BP</div>
-            <span style="font-weight: 900; font-size: 16px; letter-spacing: -0.5px;">BytePay Cloud Pro</span>
+            <span style="font-weight: 900; font-size: 16px; letter-spacing: -0.5px;">BYTEPAY VE</span>
         </div>
         <div class="header-actions">
             <button class="icon-btn" onclick="toggleNotifications()" title="Notificaciones">
-                🔔 <span class="badge-dot" id="notifDot" style="display:none;"></span>
+                ⚠️ <span class="badge-dot" id="notifDot" style="display:none;"></span>
             </button>
         </div>
     </header>
 
-    <!-- Panel de Notificaciones -->
     <div id="notificationsPanel" class="notifications-panel">
         <div style="font-weight: bold; font-size: 13px; margin-bottom: 10px; display: flex; justify-content: space-between;">
-            <span>Centro de Avisos</span>
+            <span>Centro de Avisos & Automatización</span>
             <span style="font-size: 10px; color: var(--primary); cursor: pointer;" onclick="marcarLeidas()">Limpiar</span>
         </div>
         <div id="listaNotificaciones">
-            <div class="notif-item">🎉 ¡Bienvenido a BytePay! Tasas sincronizadas con BCV en tiempo real.</div>
+            <div class="notif-item">🎉 Sistema de automatización de cortes activo. Inicial pre-pagada.</div>
         </div>
     </div>
 
-    <!-- Sidebar Cliente -->
     <div id="sidebarOverlay" class="overlay" onclick="toggleSidebar()"></div>
     <div id="clientSidebar" class="sidebar">
         <div class="sidebar-header">
@@ -204,38 +201,36 @@
         </ul>
     </div>
 
-    <!-- Contenedor Principal -->
     <main>
         <div class="app-container">
 
-            <!-- VISTA 1: HOME / LOGIN -->
             <div id="view-home" class="view active">
-                <h1>Consulta de Contratos</h1>
-                <p class="subtitle">Ingrese su número de contrato para verificar sus artículos y cuotas calculadas en tiempo real con la tasa oficial del Banco Central de Venezuela.</p>
+                <h1>Iniciar sesión</h1>
+                <p class="subtitle">Ingrese su número de contrato o credenciales de acceso</p>
 
                 <div class="form-group">
-                    <label>Número de Contrato</label>
+                    <label>Número de Contrato o RUT</label>
                     <input type="text" id="inputContrato" placeholder="Ej. N33">
                 </div>
-                <button class="btn btn-primary" onclick="iniciarSesionConAnimacion('cliente')">Consultar Cuenta</button>
+                <button class="btn btn-primary" onclick="iniciarSesionConAnimacion('cliente')">Entrar como Cliente</button>
                 
                 <div style="width:100%; height:1px; background:var(--border); margin:20px 0;"></div>
                 
                 <div class="form-group">
-                    <label>Tipo de Acceso Administrativo</label>
+                    <label>Tipo de Panel Administrativo</label>
                     <select id="selectTipoAdmin" onchange="cambiarModoAdminLogin()" style="margin-bottom: 10px;">
-                        <option value="maestro">Administrador Maestro (Acceso Total)</option>
-                        <option value="alianza">Tienda Aliada / Socio Comercial</option>
+                        <option value="maestro">Enterprise Maestro</option>
+                        <option value="alianza">Tienda Aliada</option>
                     </select>
                 </div>
 
                 <div id="divLoginMaestro" class="form-group">
-                    <label>Contraseña Maestra</label>
-                    <input type="password" id="inputAdminPass" placeholder="••••••••">
+                    <label>Contraseña Maestro</label>
+                    <input type="password" id="inputAdminPass" placeholder="******">
                 </div>
 
                 <div id="divLoginAlianza" class="form-group" style="display: none;">
-                    <label>Usuario / RIF de la Tienda Aliada</label>
+                    <label>Usuario / RIF de Tienda Aliada</label>
                     <input type="text" id="inputAlianzaRifUser" placeholder="Ej. J-12345678-9" style="margin-bottom: 10px;">
                     <label>Contraseña de la Tienda Aliada</label>
                     <input type="password" id="inputAlianzaPass" placeholder="••••••••">
@@ -244,20 +239,18 @@
                 <button class="btn btn-secondary" onclick="iniciarSesionConAnimacion('admin')">Ingresar al Panel</button>
             </div>
 
-            <!-- VISTA DE CARGA -->
             <div id="view-loader" class="view">
                 <div class="spinner" id="loaderSpinner"></div>
                 <div class="loader-check" id="loaderCheck">✓</div>
-                <h2 id="loaderText" style="font-size: 16px; font-weight: 700; margin-top: 12px;">Sincronizando con API BCV y Firebase...</h2>
+                <h2 id="loaderText" style="font-size: 16px; font-weight: 700; margin-top: 12px;">Cargando</h2>
             </div>
 
-            <!-- VISTA 2: DASHBOARD DEL CLIENTE -->
             <div id="view-cliente-dashboard" class="view">
                 <div class="client-welcome-banner">
                     <div class="client-avatar-badge" id="bannerAvatar">👤</div>
                     <div class="client-welcome-info">
                         <h2 id="lblSaludoCliente">¡Hola!</h2>
-                        <p>Estado actual de tus productos, cuota inicial y cuotas asignadas.</p>
+                        <p>Estado actual de tus productos, cuotas y fechas límites de corte.</p>
                         <div class="contract-badge-pill" id="lblSubCliente">Contrato #---</div>
                     </div>
                 </div>
@@ -265,7 +258,7 @@
                 <div id="listaArticulosCliente"></div>
 
                 <div class="info-card" style="background: rgba(34, 197, 94, 0.05); border-color: rgba(34, 197, 94, 0.2); color: #4ade80; margin-top: 12px;">
-                    🧮 Equivalente total al cambio BCV actual (<span id="tasaRefLabel">0.00</span> VES): <strong id="lblTotalBolivares">0.00 VES</strong>
+                    🧮 Equivalente total al cambio actual (<span id="lblTasaDisplayHome">0.00</span> VES): <strong id="lblTotalBolivares">0.00 VES</strong>
                 </div>
 
                 <div style="display: flex; gap: 10px; margin-top: 12px;">
@@ -274,7 +267,6 @@
                 </div>
             </div>
 
-            <!-- VISTA: PERFIL DE USUARIO -->
             <div id="view-perfil" class="view">
                 <h1>Perfil y Ajustes</h1>
                 <p class="subtitle">Gestiona tu información personal, cédula y fotografía de perfil.</p>
@@ -286,7 +278,6 @@
                 <button class="btn btn-secondary" style="margin-top: 8px;" onclick="navegarVista('view-cliente-dashboard')">Volver al Inicio</button>
             </div>
 
-            <!-- VISTA: CATÁLOGO -->
             <div id="view-catalogo" class="view">
                 <h1>Catálogo de Productos</h1>
                 <p class="subtitle">Conoce nuestra línea de artículos disponibles para financiamiento directo.</p>
@@ -295,35 +286,28 @@
                 <button class="btn btn-secondary" style="margin-top: 16px;" onclick="navegarVista('view-cliente-dashboard')">Volver al Inicio</button>
             </div>
 
-            <!-- VISTA: PREGUNTAS FRECUENTES -->
             <div id="view-faq" class="view">
                 <h1>Preguntas Frecuentes</h1>
-                <p class="subtitle">Encuentra respuestas inmediatas a tus dudas sobre pagos y contratos.</p>
+                <p class="subtitle">Encuentra respuestas inmediatas a tus dudas sobre pagos, modalidades y bloqueos.</p>
                 
                 <div class="faq-card" onclick="toggleFaq(this)">
-                    <div class="faq-question">¿Cómo se actualizan los montos en bolívares? ▼</div>
-                    <div class="faq-answer">Todos los montos se calculan y actualizan automáticamente tomando como referencia estricta la tasa oficial del Banco Central de Venezuela en tiempo real.</div>
-                </div>
-                
-                <div class="faq-card" onclick="toggleFaq(this)">
-                    <div class="faq-question">¿Cómo reporto el pago de una cuota o inicial? ▼</div>
-                    <div class="faq-answer">Realiza tu transferencia o pago móvil, adjunta el capture y envía el reporte detallado mediante la opción oficial de WhatsApp.</div>
+                    <div class="faq-question">¿Cómo funcionan los plazos de pago y la cuota inicial? ▼</div>
+                    <div class="faq-answer">La cuota inicial se registra automáticamente como pagada al aperturarse el contrato. Las cuotas subsiguientes se calculan según la periodicidad establecida.</div>
                 </div>
 
                 <button class="btn btn-secondary" style="margin-top: 16px;" onclick="navegarVista('view-cliente-dashboard')">Volver al Inicio</button>
             </div>
 
-            <!-- VISTA: REPORTAR PAGO -->
             <div id="view-reportar-pago" class="view">
                 <h1>Reportar Pago de Cuota</h1>
                 <p class="subtitle">Ingrese los datos exactos de su transferencia o pago móvil.</p>
                 
                 <div class="form-group"><label>Número de Contrato *</label><input type="text" id="repContrato" placeholder="Ej. N33"></div>
-                <div class="form-group"><label>Tipo de Cuota / Concepto *</label><input type="text" id="repNumCuota" placeholder="Ej. Cuota Inicial o Cuota #1"></div>
+                <div class="form-group"><label>Tipo de Cuota / Concepto *</label><input type="text" id="repNumCuota" placeholder="Ej. Cuota #1"></div>
                 
                 <div style="display: flex; gap: 10px;">
                     <div class="form-group" style="flex:1;"><label>Monto Pagado ($ USD) *</label><input type="number" id="repMontoUsd" placeholder="Ej. 50.00" oninput="calcularMontoBsReporte()"></div>
-                    <div class="form-group" style="flex:1;"><label>Tasa BCV del Día</label><input type="text" id="repTasaDia" readonly style="opacity: 0.8; font-weight: bold; color: var(--primary);"></div>
+                    <div class="form-group" style="flex:1;"><label>Tasa Oficial del Día</label><input type="text" id="repTasaDia" readonly style="opacity: 0.8; font-weight: bold; color: var(--primary);"></div>
                 </div>
 
                 <div class="form-group" style="background: rgba(34, 197, 94, 0.05); border: 1px solid rgba(34, 197, 94, 0.2); padding: 12px; border-radius: 12px;">
@@ -339,22 +323,20 @@
                 <div class="form-group">
                     <label style="color: var(--primary);">📎 Adjuntar Capture / Comprobante de Pago *</label>
                     <input type="file" id="repFileCapture" accept="image/*" style="padding: 10px; cursor: pointer;">
-                    <span style="font-size: 10px; color: var(--text-muted); display: block; margin-top: 4px;">Seleccione la captura de pantalla o foto del recibo bancario.</span>
                 </div>
 
                 <button class="btn btn-whatsapp" onclick="enviarReporteWhatsApp()">📤 Enviar Reporte Completo con Capture</button>
                 <button class="btn btn-secondary" style="margin-top: 8px;" onclick="navegarVista('view-cliente-dashboard')">Volver</button>
             </div>
 
-            <!-- VISTA: PANEL ADMIN MAESTRO -->
             <div id="view-admin" class="view">
                 <h1>Panel Administrativo Maestro</h1>
-                <p class="subtitle">Gestión global de contratos, alianzas comerciales y control total del sistema.</p>
+                <p class="subtitle">Gestión global de contratos, control de empresas aliadas y estado de planes.</p>
 
                 <div class="admin-tabs">
-                    <button class="tab-btn active" onclick="cambiarTabAdmin('tab-contratos', this)">Contratos</button>
-                    <button class="tab-btn" onclick="cambiarTabAdmin('tab-alianzas', this)">Alianzas</button>
-                    <button class="tab-btn" onclick="cambiarTabAdmin('tab-verificacion', this)">Pagos / Cuotas</button>
+                    <button class="tab-btn active" onclick="cambiarTabAdmin('tab-contratos', this)">Nuevo Contrato</button>
+                    <button class="tab-btn" onclick="cambiarTabAdmin('tab-alianzas', this)">Empresas Aliadas</button>
+                    <button class="tab-btn" onclick="cambiarTabAdmin('tab-verificacion', this)">Verificar Pagos</button>
                     <button class="tab-btn" onclick="cambiarTabAdmin('tab-gestion', this)">Listado Global</button>
                 </div>
 
@@ -366,14 +348,14 @@
                     <div class="form-group"><label>URL Foto de Perfil (Opcional)</label><input type="text" id="admFoto" placeholder="https://..."></div>
                     
                     <div class="form-group">
-                        <label>Canal de Adquisición / Alianza Comercial Asociada</label>
+                        <label>Empresa / Tienda Aliada Asociada</label>
                         <select id="admAsociarAlianza">
                             <option value="Directo BytePay">Adquirido directamente en plataforma</option>
                         </select>
                     </div>
 
                     <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); padding: 14px; border-radius: 12px; margin-bottom: 14px;">
-                        <label style="color: var(--primary); margin-bottom: 10px;">📦 Agregar Producto con Margen Comercial</label>
+                        <label style="color: var(--primary); margin-bottom: 10px;">📦 Agregar Producto & Plazos (Inicial Automática)</label>
                         <div class="form-group"><label>Nombre del Artículo</label><input type="text" id="admArticulo" placeholder="Ej. Nevera ejecutiva"></div>
                         <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                             <div style="flex:1;"><label>Costo Base ($)</label><input type="number" id="admCostoBase" placeholder="250" oninput="calcularAdmin()"></div>
@@ -381,7 +363,7 @@
                         </div>
                         <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                             <div style="flex:1;">
-                                <label>% Inicial</label>
+                                <label>% Inicial (Pre-pagada)</label>
                                 <select id="admPorcentaje" onchange="calcularAdmin()">
                                     <option value="30">30%</option>
                                     <option value="40" selected>40%</option>
@@ -390,52 +372,105 @@
                             </div>
                             <div style="flex:1;"><label>Cuotas Restantes</label><input type="number" id="admCuotas" value="4" oninput="calcularAdmin()"></div>
                         </div>
+                        <div class="form-group">
+                            <label>Periodicidad de Pago</label>
+                            <select id="admPeriodicidad">
+                                <option value="semanal">Semanal (7 días)</option>
+                                <option value="quincenal">Quincenal (15 días)</option>
+                                <option value="mensual" selected>Mensual (30 días)</option>
+                            </select>
+                        </div>
                         <div style="font-size: 12px; color: var(--text-muted);">
-                            Precio Final: <b style="color:#fff;" id="admResTotal">$0.00</b> | Inicial: <b style="color:#fff;" id="admResInicial">$0.00</b> | Cuota: <b style="color:#fff;" id="admResCuota">$0.00</b>
+                            Precio Final: <b style="color:#fff;" id="admResTotal">$0.00</b> | Inicial Automática (<span style="color:var(--success);">Pagada</span>): <b style="color:#fff;" id="admResInicial">$0.00</b> | Cuota: <b style="color:#fff;" id="admResCuota">$0.00</b>
                         </div>
                     </div>
-                    <button class="btn btn-primary" onclick="guardarEnFirebase()">Validar y Guardar Contrato</button>
+                    <button class="btn btn-primary" onclick="guardarEnFirebase()">Crear Contrato (Inicial Pre-pagada)</button>
                 </div>
 
                 <div id="tab-alianzas" class="admin-section">
-                    <h3 style="font-size: 13px; margin-bottom: 10px; color: var(--text-main);">Registrar Nueva Tienda Aliada</h3>
-                    <div class="form-group"><label>Nombre de la Tienda / Alianza</label><input type="text" id="alianzaNombre" placeholder="Ej. Comercializadora Jotech C.A."></div>
+                    <h3 style="font-size: 13px; margin-bottom: 10px; color: var(--text-main);">Gestionar Empresas Aliadas y Estatus en Plan</h3>
+                    <div class="form-group"><label>Nombre de la Tienda / Empresa</label><input type="text" id="alianzaNombre" placeholder="Ej. Comercializadora Jotech C.A."></div>
                     <div class="form-group"><label>RIF de la Tienda (Usuario)</label><input type="text" id="alianzaRif" placeholder="J-12345678-9"></div>
                     <div class="form-group"><label>Teléfono de Contacto</label><input type="text" id="alianzaTelefono" placeholder="04121234567"></div>
-                    <div class="form-group"><label>Contraseña de Acceso para la Tienda</label><input type="password" id="alianzaPassword" placeholder="••••••••"></div>
-                    <button class="btn btn-primary" onclick="guardarAlianza()">Registrar Tienda Aliada</button>
+                    <div class="form-group"><label>Contraseña de Acceso</label><input type="password" id="alianzaPassword" placeholder="••••••••"></div>
+                    <div class="form-group">
+                        <label>Estatus en el Plan</label>
+                        <select id="alianzaEstadoPlan">
+                            <option value="activo">Activo en el Plan</option>
+                            <option value="pendiente">Pendiente de Ingresar al Plan</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="guardarAlianza()">Registrar / Actualizar Empresa Aliada</button>
                 </div>
 
                 <div id="tab-verificacion" class="admin-section">
-                    <h3 style="font-size: 13px; margin-bottom: 10px; color: var(--text-main);">Aprobar Pago (Inicial o Cuotas)</h3>
-                    <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Indique el contrato y si aprueba la "inicial" o el número de cuota.</p>
+                    <h3 style="font-size: 13px; margin-bottom: 10px; color: var(--text-main);">Aprobar Cuotas Regulares y Desbloquear</h3>
                     <div class="form-group"><label>Número de Contrato</label><input type="text" id="verifContratoId" placeholder="Ej. N33"></div>
-                    <div class="form-group"><label>Concepto a Aprobar ("inicial" o número ej. 1, 2...)</label><input type="text" id="verifNumCuota" placeholder="inicial o 1"></div>
-                    <button class="btn btn-primary" onclick="aprobarCuotaAdmin()">Marcar como PAGADO</button>
+                    <div class="form-group"><label>Número de Cuota a Aprobar (Ej. 1, 2...)</label><input type="text" id="verifNumCuota" placeholder="1"></div>
+                    <button class="btn btn-primary" onclick="aprobarCuotaAdmin()">Marcar Cuota como PAGADO & Desbloquear</button>
                 </div>
 
                 <div id="tab-gestion" class="admin-section">
-                    <h3 style="font-size: 13px; margin-bottom: 10px; color: var(--text-main);">Contratos y Credenciales de Alianzas</h3>
-                    <div id="listaAdminGeneral" style="max-height: 250px; overflow-y: auto; margin-bottom: 12px;"></div>
-                    <button class="btn btn-secondary" onclick="cargarListadosAdmin()">Actualizar Listado</button>
+                    <h3 style="font-size: 13px; margin-bottom: 10px; color: var(--text-main);">Listado General de Contratos y Empresas Aliadas</h3>
+                    <div id="listaAdminGeneral" style="max-height: 280px; overflow-y: auto; margin-bottom: 12px;"></div>
+                    <button class="btn btn-secondary" onclick="cargarListadosAdmin()">Actualizar Listado Global</button>
                 </div>
 
                 <button class="btn btn-secondary" style="margin-top: 16px;" onclick="navegarVista('view-home')">Cerrar Sesión Maestro</button>
             </div>
 
-            <!-- VISTA: PANEL EXCLUSIVO TIENDA ALIADA -->
             <div id="view-admin-alianza" class="view">
                 <h1>Panel de Tienda Aliada</h1>
-                <p class="subtitle" id="subAlianzaTitulo">Gestión exclusiva de ventas y contratos referidos.</p>
+                <p class="subtitle" id="subAlianzaTitulo">Gestión exclusiva de sus productos, cotizaciones y contratos asociados.</p>
 
                 <div class="info-card" style="background: rgba(56, 189, 248, 0.05); border-color: rgba(56, 189, 248, 0.2); margin-bottom: 16px;">
-                    🏪 Tienda Asociada: <strong id="lblNombreTiendaAliada" style="color:#fff;">---</strong>
+                    🏪 Empresa Aliada: <strong id="lblNombreTiendaAliada" style="color:#fff;">---</strong><br>
+                    📌 Estatus en Plan: <span id="lblEstadoPlanAliado" style="color:var(--success);">Activo</span>
                 </div>
 
-                <h3 style="font-size: 14px; margin-bottom: 10px; color: var(--text-main);">📦 Mis Ventas y Contratos Referidos</h3>
-                <div id="listaVentasAlianza" style="max-height: 300px; overflow-y: auto; margin-bottom: 16px;"></div>
+                <div class="admin-tabs" style="margin-bottom: 14px;">
+                    <button class="tab-btn active" onclick="cambiarTabAliado('tab-aliado-productos', this)">Agregar Producto a Contrato</button>
+                    <button class="tab-btn" onclick="cambiarTabAliado('tab-aliado-ventas', this)">Mis Ventas / Contratos</button>
+                </div>
 
-                <button class="btn btn-secondary" onclick="navegarVista('view-home')">Cerrar Sesión Alianza</button>
+                <div id="tab-aliado-productos" class="admin-section active">
+                    <div class="form-group"><label>Número de Contrato Existente *</label><input type="text" id="aliadoContratoId" placeholder="Ej. N33"></div>
+                    <div class="form-group"><label>Nombre del Producto / Artículo Adicional</label><input type="text" id="aliadoArticulo" placeholder="Ej. Smartphone Galaxy"></div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <div style="flex:1;"><label>Costo Base ($)</label><input type="number" id="aliadoCostoBase" placeholder="100" oninput="calcularAliadoForm()"></div>
+                        <div style="flex:1;"><label>Margen / Recargo ($)</label><input type="number" id="aliadoRecargo" placeholder="20" oninput="calcularAliadoForm()"></div>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <div style="flex:1;">
+                            <label>% Inicial (Pre-pagada)</label>
+                            <select id="aliadoPorcentaje" onchange="calcularAliadoForm()">
+                                <option value="30">30%</option>
+                                <option value="40" selected>40%</option>
+                                <option value="50">50%</option>
+                            </select>
+                        </div>
+                        <div style="flex:1;"><label>Cuotas Restantes</label><input type="number" id="aliadoCuotas" value="4" oninput="calcularAliadoForm()"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Periodicidad</label>
+                        <select id="aliadoPeriodicidad">
+                            <option value="semanal">Semanal (7 días)</option>
+                            <option value="quincenal">Quincenal (15 días)</option>
+                            <option value="mensual" selected>Mensual (30 días)</option>
+                        </select>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
+                        Total: <b style="color:#fff;" id="aliadoResTotal">$0.00</b> | Inicial (<span style="color:var(--success);">Pagada</span>): <b style="color:#fff;" id="aliadoResInicial">$0.00</b> | Cuota: <b style="color:#fff;" id="aliadoResCuota">$0.00</b>
+                    </div>
+                    <button class="btn btn-primary" onclick="guardarProductoTiendaAliadaAsociado()">Asignar Producto a Contrato</button>
+                </div>
+
+                <div id="tab-aliado-ventas" class="admin-section">
+                    <h3 style="font-size: 13px; margin-bottom: 10px; color: var(--text-main);">Contratos Referidos por esta Tienda</h3>
+                    <div id="listaVentasAlianza" style="max-height: 250px; overflow-y: auto; margin-bottom: 12px;"></div>
+                </div>
+
+                <button class="btn btn-secondary" style="margin-top: 16px;" onclick="navegarVista('view-home')">Cerrar Sesión Alianza</button>
             </div>
 
         </div>
@@ -443,7 +478,6 @@
 
     <div id="toastFeedback">¡Acción realizada con éxito!</div>
 
-    <!-- Script Firebase y Lógica con API BCV y Roles -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -460,25 +494,26 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        window.tasaBcvGlobal = 36.50;
+        window.tasaBcvActual = 36.50; 
         window.clienteActualGlobal = { id: '', nombre: '', cedula: '', telefono: '', foto: '', articulos: [] };
+        window.sesionAlianzaActual = { nombre: '', rif: '' };
 
-        async function obtenerTasaBcv() {
+        async function obtenerTasaBCV() {
             try {
-                const response = await fetch('https://bcv-api.rafnixg.dev/rates/', { cache: 'no-cache' });
-                if (!response.ok) throw new Error();
-                const data = await response.json();
-                if (data?.rates?.USD) {
-                    window.tasaBcvGlobal = parseFloat(data.rates.USD);
-                    if(document.getElementById('tasaRefLabel')) document.getElementById('tasaRefLabel').innerText = window.tasaBcvGlobal.toFixed(2);
-                    if(document.getElementById('repTasaDia')) document.getElementById('repTasaDia').value = window.tasaBcvGlobal.toFixed(2) + " VES/USD";
+                const res = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
+                const data = await res.json();
+                if (data && data.promedio) {
+                    window.tasaBcvActual = data.promedio;
+                    if(document.getElementById('lblTasaDisplayHome')) document.getElementById('lblTasaDisplayHome').textContent = data.promedio.toFixed(2);
+                    if(document.getElementById('repTasaDia')) document.getElementById('repTasaDia').value = data.promedio.toFixed(2) + " VES/USD";
                 }
-            } catch (error) {
-                if(document.getElementById('tasaRefLabel')) document.getElementById('tasaRefLabel').innerText = window.tasaBcvGlobal.toFixed(2);
-                if(document.getElementById('repTasaDia')) document.getElementById('repTasaDia').value = window.tasaBcvGlobal.toFixed(2) + " VES/USD";
+            } catch (e) {
+                window.tasaBcvActual = 36.50;
+                if(document.getElementById('lblTasaDisplayHome')) document.getElementById('lblTasaDisplayHome').textContent = "36.50";
+                if(document.getElementById('repTasaDia')) document.getElementById('repTasaDia').value = "36.50 VES/USD";
             }
         }
-        obtenerTasaBcv();
+        obtenerTasaBCV();
 
         async function cargarSelectoresAlianzas() {
             try {
@@ -488,7 +523,8 @@
                 let optionsHtml = '<option value="Directo BytePay">Adquirido directamente en plataforma</option>';
                 snap.forEach(docSnap => {
                     const data = docSnap.data();
-                    optionsHtml += `<option value="${data.nombre} (RIF: ${data.rif})">${data.nombre} - RIF: ${data.rif}</option>`;
+                    const estadoText = data.estadoPlan === 'pendiente' ? ' [Pendiente en Plan]' : ' [Activo]';
+                    optionsHtml += `<option value="${data.nombre} (RIF: ${data.rif})">${data.nombre} - RIF: ${data.rif} ${estadoText}</option>`;
                 });
                 selectAdmin.innerHTML = optionsHtml;
             } catch (e) { console.error(e); }
@@ -524,10 +560,10 @@
                 document.getElementById('view-loader').style.display = 'flex';
                 document.getElementById('loaderSpinner').style.display = 'block';
                 document.getElementById('loaderCheck').style.display = 'none';
-                document.getElementById('loaderText').innerText = "Sincronizando con API BCV y cargando datos...";
+                document.getElementById('loaderText').innerText = "Sincronizando y Verificando Plazos";
 
                 try {
-                    await obtenerTasaBcv();
+                    await obtenerTasaBCV();
                     const clienteDoc = await getDoc(doc(db, "clientes", contratoId));
                     if (!clienteDoc.exists()) {
                         document.getElementById('view-loader').style.display = 'none';
@@ -537,11 +573,18 @@
                     }
 
                     const clienteData = clienteDoc.data();
+                    const qArt = query(collection(db, "articulos"), where("contratoId", "==", contratoId));
+                    const snapArt = await getDocs(qArt);
+                    
+                    let articulosTemp = [];
+                    snapArt.forEach(docSnap => articulosTemp.push(docSnap.data()));
+
                     window.clienteActualGlobal.id = contratoId;
                     window.clienteActualGlobal.nombre = clienteData.nombreTitular || "Cliente";
                     window.clienteActualGlobal.cedula = clienteData.cedula || "";
                     window.clienteActualGlobal.telefono = clienteData.telefono || "No registrado";
                     window.clienteActualGlobal.foto = clienteData.foto || "";
+                    window.clienteActualGlobal.articulos = articulosTemp;
                     
                     document.getElementById('lblSaludoCliente').innerText = obtenerSaludoDinamico(window.clienteActualGlobal.nombre);
                     document.getElementById('lblSubCliente').innerText = `CONTRATO #${contratoId}`;
@@ -559,32 +602,24 @@
                         avatarContainer.innerHTML = `👤`;
                     }
 
-                    const qArt = query(collection(db, "articulos"), where("contratoId", "==", contratoId));
-                    const snapArt = await getDocs(qArt);
                     const contenedorArt = document.getElementById('listaArticulosCliente');
-                    contenedorArt.innerHTML = '<h3 style="font-size: 14px; margin-bottom: 10px; color: var(--text-main);">📦 Productos, Inicial y Cuotas (BCV)</h3>';
+                    contenedorArt.innerHTML = '<h3 style="font-size: 14px; margin-bottom: 10px; color: var(--text-main);">📦 Productos, Inicial (Pre-pagada) & Cuotas</h3>';
                     
-                    window.clienteActualGlobal.articulos = [];
                     let sumaTotalBs = 0;
 
-                    snapArt.forEach((docSnap, index) => {
-                        const art = docSnap.data();
-                        window.clienteActualGlobal.articulos.push(art);
-                        const eqBsTotal = art.costoTotal * window.tasaBcvGlobal;
+                    window.clienteActualGlobal.articulos.forEach((art, index) => {
+                        const eqBsTotal = art.costoTotal * window.tasaBcvActual;
                         sumaTotalBs += eqBsTotal;
 
                         let cuotasHtml = '';
                         const cuotasPagadasArr = art.cuotasPagadas || [];
                         
-                        const inicialPagada = cuotasPagadasArr.includes("inicial");
-                        const badgeIniClase = inicialPagada ? 'badge-pagado' : 'badge-pendiente';
-                        const badgeIniTexto = inicialPagada ? 'PAGADO' : 'PENDIENTE';
-                        const montoInicialBs = art.valorInicial * window.tasaBcvGlobal;
+                        const montoInicialBs = art.valorInicial * window.tasaBcvActual;
 
                         cuotasHtml += `
-                            <div class="cuota-row" style="background: rgba(34, 197, 94, 0.05);">
-                                <span><b>Cuota Inicial (${art.porcentajeInicial}%)</b> - $${art.valorInicial.toFixed(2)} / ${montoInicialBs.toLocaleString('es-VE', {minimumFractionDigits: 2})} VES</span>
-                                <span class="badge-status ${badgeIniClase}">${badgeIniTexto}</span>
+                            <div class="cuota-row" style="background: rgba(34, 197, 94, 0.08);">
+                                <span><b>Cuota Inicial Obligatoria (${art.porcentajeInicial}%)</b> - $${art.valorInicial.toFixed(2)} / ${montoInicialBs.toLocaleString('es-VE', {minimumFractionDigits: 2})} VES</span>
+                                <span class="badge-status badge-pagado">PAGADO (AUTOMÁTICO)</span>
                             </div>
                         `;
 
@@ -593,11 +628,11 @@
                             const pagado = cuotasPagadasArr.includes(i.toString()) || cuotasPagadasArr.includes(i);
                             const badgeClase = pagado ? 'badge-pagado' : 'badge-pendiente';
                             const badgeTexto = pagado ? 'PAGADO' : 'PENDIENTE';
-                            const montoCuotaBs = art.cuotaValor * window.tasaBcvGlobal;
+                            const montoCuotaBs = art.cuotaValor * window.tasaBcvActual;
 
                             cuotasHtml += `
                                 <div class="cuota-row">
-                                    <span>Cuota #${i} ($${art.cuotaValor.toFixed(2)} / ${montoCuotaBs.toLocaleString('es-VE', {minimumFractionDigits: 2})} VES)</span>
+                                    <span>Cuota #${i} ($${art.cuotaValor.toFixed(2)} / ${montoCuotaBs.toLocaleString('es-VE', {minimumFractionDigits: 2})} VES) - Plazo: ${art.periodicidad || 'mensual'}</span>
                                     <span class="badge-status ${badgeClase}">${badgeTexto}</span>
                                 </div>
                             `;
@@ -606,16 +641,14 @@
                         contenedorArt.innerHTML += `
                             <div class="accordion-header" onclick="toggleAccordion('prod-${index}')">
                                 <span>📦 ${art.nombreArticulo}</span>
-                                <span style="font-size: 11px; color: var(--primary);">Detalle & Tasa BCV ▼</span>
+                                <span style="font-size: 11px; color: var(--primary);">Detalle ▼</span>
                             </div>
                             <div id="prod-${index}" class="accordion-body">
                                 <div style="font-size: 12px; margin-bottom: 10px; color: var(--text-muted); line-height: 1.5;">
-                                    • Costo Base: <b>$${(art.costoBase || 0).toFixed(2)}</b> | Recargo: <b>$${(art.recargo || 0).toFixed(2)}</b><br>
-                                    • Costo Total con Margen: <b>$${art.costoTotal.toFixed(2)}</b><br>
-                                    • Alianza Comercial: <b>${art.alianzaAsociada || 'Directo BytePay'}</b><br>
-                                    • Tasa BCV Aplicada: <b>${window.tasaBcvGlobal.toFixed(2)} VES/USD</b>
+                                    • Costo Total: <b>$${art.costoTotal.toFixed(2)}</b><br>
+                                    • Aliado Comercial: <b>${art.alianzaAsociada || 'Directo BytePay'}</b><br>
+                                    • Tasa Aplicada: <b>${window.tasaBcvActual.toFixed(2)} VES/USD</b>
                                 </div>
-                                <div style="font-weight: bold; font-size: 12px; margin-bottom: 8px; color: var(--text-main);">Desglose Inicial y Cuotas:</div>
                                 <div style="border: 1px solid var(--border); border-radius: 10px; background: rgba(0,0,0,0.2);">
                                     ${cuotasHtml}
                                 </div>
@@ -624,11 +657,11 @@
                     });
 
                     document.getElementById('lblTotalBolivares').innerText = `${sumaTotalBs.toLocaleString('es-VE', {minimumFractionDigits: 2})} VES`;
-                    document.getElementById('tasaRefLabel').innerText = window.tasaBcvGlobal.toFixed(2);
+                    document.getElementById('lblTasaDisplayHome').innerText = window.tasaBcvActual.toFixed(2);
                     document.getElementById('repContrato').value = contratoId;
                     document.getElementById('repCedula').value = window.clienteActualGlobal.cedula;
                     document.getElementById('repTelefono').value = window.clienteActualGlobal.telefono;
-                    document.getElementById('repTasaDia').value = window.tasaBcvGlobal.toFixed(2) + " VES/USD";
+                    document.getElementById('repTasaDia').value = window.tasaBcvActual.toFixed(2) + " VES/USD";
 
                     setTimeout(() => {
                         document.getElementById('view-loader').style.display = 'none';
@@ -645,7 +678,7 @@
                 const modoAdmin = document.getElementById('selectTipoAdmin').value;
                 if (modoAdmin === 'maestro') {
                     const pass = document.getElementById('inputAdminPass').value;
-                    if (pass === "admin123") {
+                    if (pass === "teo1212") {
                         document.getElementById('inputAdminPass').value = '';
                         navegarVista('view-admin');
                         document.getElementById('btnMenuToggle').style.display = 'none';
@@ -653,7 +686,7 @@
                         cargarSelectoresAlianzas();
                         cargarListadosAdmin();
                     } else {
-                        alert("Contraseña maestra incorrecta.");
+                        alert("Contraseña incorrecta.");
                     }
                 } else {
                     const rifUser = document.getElementById('inputAlianzaRifUser').value.trim();
@@ -662,18 +695,25 @@
 
                     try {
                         const alianzaDoc = await getDoc(doc(db, "alianzas", rifUser));
-                        if (!alianzaDoc.exists()) { alert("La tienda aliada no existe con ese RIF / Usuario."); return; }
+                        if (!alianzaDoc.exists()) { alert("La tienda aliada no existe con ese RIF."); return; }
                         const alianzaData = alianzaDoc.data();
 
                         if (alianzaData.password === passAlianza) {
                             document.getElementById('inputAlianzaRifUser').value = '';
                             document.getElementById('inputAlianzaPass').value = '';
+                            window.sesionAlianzaActual = { nombre: alianzaData.nombre, rif: alianzaData.rif };
+                            
                             document.getElementById('lblNombreTiendaAliada').innerText = `${alianzaData.nombre} (RIF: ${alianzaData.rif})`;
+                            const estatusPlanText = alianzaData.estadoPlan === 'pendiente' ? 'Pendiente de Ingresar al Plan' : 'Activo en el Plan';
+                            document.getElementById('lblEstadoPlanAliado').innerText = estatusPlanText;
+                            document.getElementById('lblEstadoPlanAliado').style.color = alianzaData.estadoPlan === 'pendiente' ? 'var(--danger)' : 'var(--success)';
+
                             navegarVista('view-admin-alianza');
                             document.getElementById('btnMenuToggle').style.display = 'none';
+                            calcularAliadoForm();
                             cargarVentasAlianza(alianzaData.nombre);
                         } else {
-                            alert("Contraseña de tienda aliada incorrecta.");
+                            alert("Contraseña incorrecta.");
                         }
                     } catch (e) { alert("Error de acceso: " + e.message); }
                 }
@@ -685,16 +725,17 @@
             const rif = document.getElementById('alianzaRif').value.trim();
             const telefono = document.getElementById('alianzaTelefono').value.trim();
             const password = document.getElementById('alianzaPassword').value.trim();
+            const estadoPlan = document.getElementById('alianzaEstadoPlan').value;
 
             if (!nombre || !rif || !telefono || !password) {
-                alert("Complete todos los datos de la alianza incluyendo su contraseña.");
+                alert("Complete todos los campos de la empresa aliada.");
                 return;
             }
 
             try {
                 const alianzaRef = doc(db, "alianzas", rif);
-                await setDoc(alianzaRef, { nombre, rif, telefono, password, creadoEn: new Date().toISOString() });
-                mostrarToast("¡Tienda aliada registrada con éxito!");
+                await setDoc(alianzaRef, { nombre, rif, telefono, password, estadoPlan, creadoEn: new Date().toISOString() });
+                mostrarToast("¡Empresa aliada guardada exitosamente!");
                 document.getElementById('alianzaNombre').value = '';
                 document.getElementById('alianzaRif').value = '';
                 document.getElementById('alianzaTelefono').value = '';
@@ -702,13 +743,66 @@
                 cargarSelectoresAlianzas();
                 cargarListadosAdmin();
             } catch (error) {
-                alert("Error al registrar alianza: " + error.message);
+                alert("Error al guardar alianza: " + error.message);
+            }
+        };
+
+        window.guardarProductoTiendaAliadaAsociado = async function() {
+            const contratoId = document.getElementById('aliadoContratoId').value.trim();
+            const articulo = document.getElementById('aliadoArticulo').value.trim();
+            const costoBase = parseFloat(document.getElementById('aliadoCostoBase').value) || 0;
+            const recargo = parseFloat(document.getElementById('aliadoRecargo').value) || 0;
+            const porcentaje = parseInt(document.getElementById('aliadoPorcentaje').value);
+            const numCuotas = parseInt(document.getElementById('aliadoCuotas').value);
+            const periodicidad = document.getElementById('aliadoPeriodicidad').value;
+
+            if (!contratoId || !articulo || costoBase <= 0) {
+                alert("Complete el número de contrato, nombre del artículo y costo base.");
+                return;
+            }
+
+            try {
+                const clienteDoc = await getDoc(doc(db, "clientes", contratoId));
+                if (!clienteDoc.exists()) {
+                    alert(`❌ El contrato #${contratoId} no existe en el sistema.`);
+                    return;
+                }
+
+                const costoTotal = costoBase + recargo;
+                const valorInicial = (costoTotal * porcentaje) / 100;
+                const cuotaValor = numCuotas > 0 ? ((costoTotal - valorInicial) / numCuotas) : 0;
+
+                const articuloRef = doc(collection(db, "articulos"));
+                await setDoc(articuloRef, {
+                    contratoId,
+                    nombreArticulo: articulo,
+                    costoBase,
+                    recargo,
+                    costoTotal,
+                    porcentajeInicial: porcentaje,
+                    valorInicial,
+                    totalCuotas: numCuotas,
+                    cuotaValor,
+                    periodicidad,
+                    alianzaAsociada: `${window.sesionAlianzaActual.nombre} (RIF: ${window.sesionAlianzaActual.rif})`,
+                    cuotasPagadas: ["inicial"], 
+                    creadoEn: new Date().toISOString()
+                });
+
+                mostrarToast("¡Producto adicional asignado al contrato con éxito!");
+                document.getElementById('aliadoContratoId').value = '';
+                document.getElementById('aliadoArticulo').value = '';
+                document.getElementById('aliadoCostoBase').value = '';
+                document.getElementById('aliadoRecargo').value = '';
+                cargarVentasAlianza(window.sesionAlianzaActual.nombre);
+            } catch (e) {
+                alert("Error al registrar producto: " + e.message);
             }
         };
 
         window.cargarVentasAlianza = async function(nombreTienda) {
             const container = document.getElementById('listaVentasAlianza');
-            container.innerHTML = 'Cargando ventas referidas...';
+            container.innerHTML = 'Cargando registros...';
             try {
                 const qArt = query(collection(db, "articulos"));
                 const snapArt = await getDocs(qArt);
@@ -721,16 +815,16 @@
                         contador++;
                         html += `
                             <div class="admin-list-item" style="flex-direction: column; align-items: flex-start; gap: 4px;">
-                                <span><b>Contrato #${art.contratoId}</b> - Artículo: <b>${art.nombreArticulo}</b></span>
-                                <span style="font-size: 11px; color: var(--text-muted);">Costo Total: $${art.costoTotal.toFixed(2)} USD | Cuotas: ${art.totalCuotas}</span>
+                                <span>Ref: <b>#${art.contratoId}</b> - Artículo: <b>${art.nombreArticulo}</b></span>
+                                <span style="font-size: 11px; color: var(--text-muted);">Total: $${art.costoTotal.toFixed(2)} | Inicial: $${art.valorInicial.toFixed(2)} (<b style="color:var(--success);">Pagada</b>)</span>
                             </div>
                         `;
                     }
                 });
 
-                container.innerHTML = contador > 0 ? html : 'No hay ventas referidas registradas para esta tienda.';
+                container.innerHTML = contador > 0 ? html : 'No hay registros o ventas asociadas a esta tienda.';
             } catch (e) {
-                container.innerHTML = "Error al cargar ventas de la alianza.";
+                container.innerHTML = "Error al cargar listado.";
             }
         };
 
@@ -746,6 +840,7 @@
             const recargo = parseFloat(document.getElementById('admRecargo').value) || 0;
             const porcentaje = parseInt(document.getElementById('admPorcentaje').value);
             const numCuotas = parseInt(document.getElementById('admCuotas').value);
+            const periodicidad = document.getElementById('admPeriodicidad').value;
 
             if (!contratoId || !cedula || !titular || !telefono || !articulo || costoBase <= 0) { 
                 alert("Complete los campos obligatorios."); 
@@ -761,7 +856,7 @@
                     return;
                 }
 
-                await setDoc(contratoDocRef, { numeroContrato: contratoId, cedula, nombreTitular: titular, telefono, foto: foto || "" });
+                await setDoc(contratoDocRef, { numeroContrato: contratoId, cedula, nombreTitular: titular, telefono, foto: foto || "", bloqueadoExcepcion: true });
 
                 const costoTotal = costoBase + recargo;
                 const valorInicial = (costoTotal * porcentaje) / 100;
@@ -769,10 +864,22 @@
 
                 const articuloRef = doc(collection(db, "articulos"));
                 await setDoc(articuloRef, {
-                    contratoId, nombreArticulo: articulo, costoBase, recargo, costoTotal, porcentajeInicial: porcentaje, valorInicial, totalCuotas: numCuotas, cuotaValor: cuotaMensual, alianzaAsociada, cuotasPagadas: [], creadoEn: new Date().toISOString()
+                    contratoId,
+                    nombreArticulo: articulo,
+                    costoBase,
+                    recargo,
+                    costoTotal,
+                    porcentajeInicial: porcentaje,
+                    valorInicial,
+                    totalCuotas: numCuotas,
+                    cuotaValor: cuotaMensual,
+                    periodicidad,
+                    alianzaAsociada,
+                    cuotasPagadas: ["inicial"], 
+                    creadoEn: new Date().toISOString()
                 });
 
-                mostrarToast("Contrato guardado con éxito");
+                mostrarToast("Contrato creado con éxito. Cuota inicial pre-pagada automáticamente.");
                 document.getElementById('admContrato').value = '';
                 document.getElementById('admCedulaTitular').value = '';
                 document.getElementById('admTitular').value = '';
@@ -785,16 +892,11 @@
 
         window.aprobarCuotaAdmin = async function() {
             const contratoId = document.getElementById('verifContratoId').value.trim();
-            let concepto = document.getElementById('verifNumCuota').value.trim().toLowerCase();
+            const cuotaNum = document.getElementById('verifNumCuota').value.trim();
 
-            if (!contratoId || !concepto) {
-                alert("Ingrese el contrato y concepto a aprobar.");
+            if (!contratoId || !cuotaNum) {
+                alert("Ingrese el número de contrato y cuota.");
                 return;
-            }
-
-            if(concepto !== 'inicial') {
-                concepto = parseInt(concepto);
-                if(isNaN(concepto)) { alert("Indique 'inicial' o un número de cuota válido."); return; }
             }
 
             try {
@@ -809,56 +911,109 @@
                 for (const docSnap of snapArt.docs) {
                     const artData = docSnap.data();
                     let cuotasPagadas = artData.cuotasPagadas || [];
-                    const conceptoKey = typeof concepto === 'number' ? concepto.toString() : concepto;
                     
-                    if (!cuotasPagadas.includes(conceptoKey) && !cuotasPagadas.includes(concepto)) {
-                        cuotasPagadas.push(conceptoKey);
+                    if (!cuotasPagadas.includes(cuotaNum)) {
+                        cuotasPagadas.push(cuotaNum);
                         await setDoc(docSnap.ref, { cuotasPagadas }, { merge: true });
                     }
                 }
 
-                mostrarToast(`¡Concepto '${concepto}' marcado como PAGADO!`);
+                mostrarToast(`¡Cuota #${cuotaNum} aprobada con éxito!`);
                 document.getElementById('verifContratoId').value = '';
                 document.getElementById('verifNumCuota').value = '';
+                cargarListadosAdmin();
             } catch (error) {
-                alert("Error al aprobar pago: " + error.message);
+                alert("Error: " + error.message);
             }
         };
 
         window.cargarListadosAdmin = async function() {
             const container = document.getElementById('listaAdminGeneral');
-            container.innerHTML = 'Cargando listados...';
+            container.innerHTML = 'Cargando listados detallados...';
             try {
                 const snapClientes = await getDocs(collection(db, "clientes"));
                 const snapAlianzas = await getDocs(collection(db, "alianzas"));
-                
-                let html = '<b style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:6px;">CONTRATOS REGISTRADOS:</b>';
-                snapClientes.forEach(docSnap => {
-                    const c = docSnap.data();
-                    html += `
-                        <div class="admin-list-item">
-                            <span><b>Contrato #${c.numeroContrato}</b> - ${c.nombreTitular} (${c.cedula})</span>
-                            <button class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size:10px; background:var(--danger); color:#fff; margin:0;" onclick="eliminarRegistroAdmin('clientes', '${c.numeroContrato}')">Eliminar</button>
-                        </div>
-                    `;
-                });
+                const snapArticulos = await getDocs(collection(db, "articulos"));
 
-                html += '<br><b style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:6px;">COMERCIOS / ALIANZAS Y CREDENCIALES:</b>';
+                let articulosMap = {};
+                snapArticulos.forEach(docSnap => {
+                    const art = docSnap.data();
+                    if (!articulosMap[art.contratoId]) {
+                        articulosMap[art.contratoId] = [];
+                    }
+                    articulosMap[art.contratoId].push(art);
+                });
+                
+                let html = '<b style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:6px;">EMPRESAS / TIENDAS ALIADAS (PLAN & CREDENCIALES):</b>';
+                let contadorAlianzas = 0;
                 snapAlianzas.forEach(docSnap => {
+                    contadorAlianzas++;
                     const a = docSnap.data();
+                    const badgePlan = a.estadoPlan === 'pendiente' 
+                        ? '<span style="color:var(--danger); font-weight:bold;">[Pendiente de Ingresar al Plan]</span>' 
+                        : '<span style="color:var(--success); font-weight:bold;">[Activo en el Plan]</span>';
+                    
                     html += `
                         <div class="admin-list-item" style="flex-direction: column; align-items: flex-start; gap: 4px;">
-                            <span><b>Tienda:</b> ${a.nombre} | <b>Usuario (RIF):</b> ${a.rif}</span>
-                            <span><b>Contraseña:</b> <code style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; color:var(--primary);">${a.password}</code></span>
-                            <button class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size:10px; background:var(--danger); color:#fff; margin-top:4px;" onclick="eliminarRegistroAdmin('alianzas', '${a.rif}')">Eliminar Alianza</button>
+                            <span><b>Tienda:</b> ${a.nombre} | <b>RIF:</b> ${a.rif} ${badgePlan}</span>
+                            <span><b>Teléfono:</b> ${a.telefono} | <b>Clave de Acceso:</b> <code style="background:rgba(255,255,255,0.1); padding:2px 4px; border-radius:4px; color:var(--primary);">${a.password}</code></span>
+                            <div style="display:flex; gap:6px; margin-top:4px;">
+                                <button class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size:10px; background:var(--primary); color:#000; margin:0;" onclick="cambiarEstadoPlanAliado('${a.rif}', '${a.estadoPlan === 'pendiente' ? 'activo' : 'pendiente'}')">Cambiar Estatus Plan</button>
+                                <button class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size:10px; background:var(--danger); color:#fff; margin:0;" onclick="eliminarRegistroAdmin('alianzas', '${a.rif}')">Eliminar</button>
+                            </div>
                         </div>
                     `;
                 });
+                if(contadorAlianzas === 0) html += '<div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">No hay empresas aliadas registradas.</div>';
+
+                html += '<br><b style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:6px;">CONTRATOS REGISTRADOS (CON DETALLE DE PRODUCTOS Y CUOTAS):</b>';
+                
+                let contadorContratos = 0;
+                snapClientes.forEach(docSnap => {
+                    contadorContratos++;
+                    const c = docSnap.data();
+                    const artsContrato = articulosMap[c.numeroContrato] || [];
+                    
+                    let detalleArticulosHtml = '';
+                    if (artsContrato.length > 0) {
+                        artsContrato.forEach(art => {
+                            const cuotasPagadas = art.cuotasPagadas || [];
+                            detalleArticulosHtml += `<div style="font-size: 11px; margin-top: 4px; color: var(--text-muted); border-left: 2px solid var(--primary); padding-left: 6px;">
+                                • <b>${art.nombreArticulo}</b> (Total: $${art.costoTotal.toFixed(2)})<br>
+                                &nbsp;&nbsp;Cuotas Pagadas: ${cuotasPagadas.length} de ${(art.totalCuotas || 0) + 1} (Incl. Inicial) | Aliado: ${art.alianzaAsociada || 'Directo'}
+                            </div>`;
+                        });
+                    } else {
+                        detalleArticulosHtml = '<div style="font-size: 11px; color: var(--danger); margin-top: 4px;">Sin artículos registrados en este contrato.</div>';
+                    }
+
+                    html += `
+                        <div class="admin-list-item" style="flex-direction: column; align-items: flex-start; gap: 6px;">
+                            <div style="display:flex; justify-content:space-width; width:100%; align-items:center;">
+                                <span><b>Contrato #${c.numeroContrato}</b> - ${c.nombreTitular} (${c.cedula})</span>
+                                <button class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size:10px; background:var(--danger); color:#fff; margin:0;" onclick="eliminarRegistroAdmin('clientes', '${c.numeroContrato}')">Eliminar</button>
+                            </div>
+                            <div style="width:100%; background:rgba(0,0,0,0.2); padding:6px 8px; border-radius:6px;">
+                                ${detalleArticulosHtml}
+                            </div>
+                        </div>
+                    `;
+                });
+                if(contadorContratos === 0) html += '<div style="font-size:12px; color:var(--text-muted);">No hay contratos registrados.</div>';
 
                 container.innerHTML = html;
             } catch (e) {
                 container.innerHTML = "Error al cargar listados.";
             }
+        };
+
+        window.cambiarEstadoPlanAliado = async function(rif, nuevoEstado) {
+            try {
+                await setDoc(doc(db, "alianzas", rif), { estadoPlan: nuevoEstado }, { merge: true });
+                mostrarToast("Estatus del plan actualizado");
+                cargarListadosAdmin();
+                cargarSelectoresAlianzas();
+            } catch (e) { alert("Error: " + e.message); }
         };
 
         window.eliminarRegistroAdmin = async function(coleccion, idDoc) {
@@ -919,11 +1074,11 @@
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(18);
             doc.setFont("helvetica", "bold");
-            doc.text("BYTEPAY - COMPROBANTE DE CONTRATO", 14, 20);
+            doc.text("BYTEPAY VE - COMPROBANTE DE CONTRATO", 14, 20);
 
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
-            doc.text("Tasa Oficial BCV: " + window.tasaBcvGlobal.toFixed(2) + " VES/USD", 14, 28);
+            doc.text("Tasa Oficial Aplicada: " + window.tasaBcvActual.toFixed(2) + " VES/USD", 14, 28);
 
             doc.setTextColor(30, 41, 59);
             doc.setFontSize(12);
@@ -942,7 +1097,7 @@
 
             let yPos = 94;
             doc.setFont("helvetica", "bold");
-            doc.text("DETALLE DE PRODUCTOS Y PLAN DE PAGOS", 14, yPos);
+            doc.text("DETALLE DE PRODUCTOS & CUOTAS", 14, yPos);
             yPos += 8;
 
             if (window.clienteActualGlobal.articulos && window.clienteActualGlobal.articulos.length > 0) {
@@ -954,16 +1109,14 @@
 
                     doc.setFont("helvetica", "normal");
                     doc.setTextColor(50, 50, 50);
-                    doc.text(`   - Alianza Comercial: ${art.alianzaAsociada || 'Directo BytePay'}`, 14, yPos);
+                    doc.text(`   - Aliado Comercial: ${art.alianzaAsociada || 'Directo BytePay'}`, 14, yPos);
                     yPos += 6;
-                    doc.text(`   - Costo Total con Margen: $${art.costoTotal.toFixed(2)} USD (${(art.costoTotal * window.tasaBcvGlobal).toLocaleString('es-VE', {minimumFractionDigits: 2})} VES)`, 14, yPos);
+                    doc.text(`   - Costo Total: $${art.costoTotal.toFixed(2)} USD (${(art.costoTotal * window.tasaBcvActual).toLocaleString('es-VE', {minimumFractionDigits: 2})} VES)`, 14, yPos);
+                    yPos += 6;
+                    doc.text(`   - Cuota Inicial (${art.porcentajeInicial}%): $${art.valorInicial.toFixed(2)} USD [ Estado: PAGADO (Automático) ]`, 14, yPos);
                     yPos += 6;
 
                     const cuotasPagadas = art.cuotasPagadas || [];
-                    const inicialOk = cuotasPagadas.includes("inicial") ? "PAGADO" : "PENDIENTE";
-                    doc.text(`   - Cuota Inicial (${art.porcentajeInicial}%): $${art.valorInicial.toFixed(2)} USD [ Estado: ${inicialOk} ]`, 14, yPos);
-                    yPos += 6;
-
                     const totalC = art.totalCuotas || 4;
                     for (let c = 1; c <= totalC; c++) {
                         const pagadaC = cuotasPagadas.includes(c.toString()) || cuotasPagadas.includes(c) ? "PAGADO" : "PENDIENTE";
@@ -976,17 +1129,11 @@
                 doc.text("No hay artículos registrados en este contrato.", 14, yPos);
             }
 
-            doc.setFontSize(9);
-            doc.setTextColor(100, 100, 100);
-            doc.text("Este comprobante ha sido generado de forma digital por el sistema BytePay Cloud Pro.", 14, 275);
-            doc.text("Sistema automatizado con sincronización BCV.", 14, 281);
-
             doc.save(`Comprobante_Contrato_${window.clienteActualGlobal.id}.pdf`);
-            mostrarToast("¡Recibo PDF institucional descargado!");
+            mostrarToast("¡Recibo PDF descargado!");
         };
     </script>
 
-    <!-- Script UI y Navegación -->
     <script>
         function navegarVista(idVista, registrarHistorial = true) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -1038,8 +1185,15 @@
         }
 
         function cambiarTabAdmin(idTab, btn) {
-            document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#view-admin .admin-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('#view-admin .tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(idTab).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function cambiarTabAliado(idTab, btn) {
+            document.querySelectorAll('#view-admin-alianza .admin-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('#view-admin-alianza .tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(idTab).classList.add('active');
             btn.classList.add('active');
         }
@@ -1060,9 +1214,25 @@
             document.getElementById('admResCuota').innerText = `$${cuotaValor.toFixed(2)} USD`;
         }
 
+        function calcularAliadoForm() {
+            const costoBase = parseFloat(document.getElementById('aliadoCostoBase').value) || 0;
+            const recargo = parseFloat(document.getElementById('aliadoRecargo').value) || 0;
+            const porcentaje = parseInt(document.getElementById('aliadoPorcentaje').value) || 40;
+            const cuotas = parseInt(document.getElementById('aliadoCuotas').value) || 4;
+            
+            const costoTotal = costoBase + recargo;
+            const inicial = (costoTotal * porcentaje) / 100;
+            const restante = costoTotal - inicial;
+            const cuotaValor = cuotas > 0 ? (restante / cuotas) : 0;
+
+            document.getElementById('aliadoResTotal').innerText = `$${costoTotal.toFixed(2)}`;
+            document.getElementById('aliadoResInicial').innerText = `$${inicial.toFixed(2)}`;
+            document.getElementById('aliadoResCuota').innerText = `$${cuotaValor.toFixed(2)} USD`;
+        }
+
         function calcularMontoBsReporte() {
             const montoUsd = parseFloat(document.getElementById('repMontoUsd').value) || 0;
-            const totalBs = montoUsd * window.tasaBcvGlobal;
+            const totalBs = montoUsd * window.tasaBcvActual;
             document.getElementById('lblMontoCalculadoBs').innerText = totalBs.toLocaleString('es-VE', {minimumFractionDigits: 2}) + " VES";
         }
 
@@ -1082,36 +1252,26 @@
             }
 
             if (fileInput.files.length === 0) {
-                alert("⚠️ Es obligatorio adjuntar el capture o comprobante de pago para procesar la verificación.");
+                alert("⚠️ Es obligatorio adjuntar el capture o comprobante de pago.");
                 return;
             }
 
-            const montoBs = (parseFloat(montoUsd) * window.tasaBcvGlobal).toLocaleString('es-VE', {minimumFractionDigits: 2});
+            const montoBs = (parseFloat(montoUsd) * window.tasaBcvActual).toLocaleString('es-VE', {minimumFractionDigits: 2});
 
             const mensaje = `*💳 REPORTE OFICIAL DE PAGO - BYTEPAY*\n\n` +
                             `📋 *Contrato:* #${contrato}\n` +
                             `🔢 *Concepto:* ${numCuota}\n` +
                             `💵 *Monto Pagado:* $${montoUsd} USD\n` +
-                            `🇻🇪 *Tasa BCV Aplicada:* ${window.tasaBcvGlobal.toFixed(2)} VES/USD\n` +
+                            `🇻🇪 *Tasa Aplicada:* ${window.tasaBcvActual.toFixed(2)} VES/USD\n` +
                             `📊 *Total Calculado:* ${montoBs} VES\n` +
                             `🏦 *Banco Emisor:* ${bancoEmisor}\n` +
                             `📱 *Teléfono:* ${telefono}\n` +
                             `🆔 *Cédula:* ${cedula}\n` +
-                            `🔖 *Referencia (6 dígitos):* ${referencia}\n` +
-                            `📎 *Estado:* Capture adjunto en dispositivo.\n\n` +
-                            `_Por favor verifique la transferencia en cuenta._`;
+                            `🔖 *Referencia (6 dígitos):* ${referencia}\n\n` +
+                            `_Inicial pre-pagada de forma automática en el sistema._`;
 
             window.open(`https://api.whatsapp.com/send?phone=584121234567&text=${encodeURIComponent(mensaje)}`, '_blank');
-            mostrarToast("¡Reporte listo! Adjunte el capture seleccionado al chat de WhatsApp.");
-        }
-
-        // Registro del Service Worker para PWABuilder
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker registrado con éxito:', reg.scope))
-                    .catch(err => console.log('Error al registrar Service Worker:', err));
-            });
+            mostrarToast("¡Reporte listo en WhatsApp!");
         }
     </script>
 </body>
